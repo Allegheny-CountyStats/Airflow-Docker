@@ -1,0 +1,14 @@
+{"col_names": {
+	"InspectionID": {"type": "int"},
+	"StoreID": {"type" : "int"},
+	"Date": {"type":"date", "format": "%Y-%m-%d"},
+	"InspectionType": {"type" : "varchar"},
+	"NumItems": {"type" : "varchar"},
+	"Result": {"type" : "varchar"},
+	"Reinspection": {"type" : "varchar"},
+	"Inspector1": {"type" : "varchar"},
+	"Inspector2": {"type" : "varchar"},
+	"Inspector3": {"type" : "varchar"},
+	"Remarks": {"type" : "varchar"}
+	}
+}
