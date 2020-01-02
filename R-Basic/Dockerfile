@@ -30,9 +30,15 @@ RUN apt-get update && apt-get install -y \
     python2.7-dev \
     ssh \
     putty \
-    openjdk-8-jdk \
+    sudo \
+    software-properties-common \
     && apt-get autoremove \
     && apt-get clean
+
+# Add Repo and install JDK 8
+RUN sudo add-apt-repository ppa:openjdk-r/ppa
+RUN sudo apt-get update
+RUN sudo apt-get install openjdk-8-jre
 
 # Rewrite odbcinst.ini file for connectors
 COPY etc_odbcinst.ini /etc/odbcinst.ini
