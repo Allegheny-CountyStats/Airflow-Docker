@@ -35,22 +35,23 @@ RUN apt-get update && apt-get install -y \
     && apt-get autoremove \
     && apt-get clean
 
-# Add Repo and install JDK 8
-RUN sudo add-apt-repository ppa:openjdk-r/ppa
-RUN sudo apt-get update
-RUN sudo apt-get install openjdk-8-jre
-
 # Rewrite odbcinst.ini file for connectors
 COPY etc_odbcinst.ini /etc/odbcinst.ini
 
-# Install Java
-RUN R -e "install.packages('rJava', repos='https://cloud.r-project.org/')"
-
-# Configure Java
-RUN R CMD javareconf
+# Add Repo and install JDK 8
+RUN apt-get update -qq && apt-get -y --no-install-recommends install \
+  libxml2-dev \
+  libcairo2-dev \
+  libpq-dev \
+    libicu-dev \ 
+    libbz2-dev \
+  liblzma-dev \
+  default-jdk \
+  && R CMD javareconf
 
 # install dependencies of most cron jobs
 RUN install2.r --error \
+    rJava \
     odbc \
     DBI \
     RODBC \
@@ -64,7 +65,7 @@ RUN install2.r --error \
     XML \
     httr \
     dotenv \
-    snake_case
+    snakecase
 
 # Copy of java connector drivers
 # Oracle
