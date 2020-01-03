@@ -13,7 +13,7 @@ parser.add_argument('-path',
                     action="store", 
                     dest="path",
                     type=str,
-                    default = 'scehma.json'
+                    default = 'schema.json'
                     help="File path of schema.")
 parser.add_argument('-db', 
                     action="store", 
@@ -44,16 +44,18 @@ col_dict = data[r'col_names']
 
 conn = pymssql.connect(host=host, user=user, password=password, database=database)
 
-db = 'Weights'
-schema = 'dbo'
-table = 'InspectionPriceVer'
-
+# Pull Warehouse Types
 sql = """SELECT TABLE_NAME, COLUMN_NAME, DATA_TYPE
 FROM {}.INFORMATION_SCHEMA.COLUMNS
 WHERE TABLE_NAME = '{}'""".format(args.db, args.table)
 
 df = pd.read_sql(sql, conn)
 
+# Pull random rows for testing
+random_test = 'SELECT TOP 10 PERCENT * FROM {}.{}.{} order by newid()'.format(args.db, args.schema, args.table)
+random = pd.read_sql(random_test, conn)
+
+# Test the Schema
 for col in col_dict:
     test = df[df[r'COLUMN_NAME'] == col]
     test = test.reset_index(drop=True)
@@ -66,12 +68,22 @@ for col in col_dict:
     data_type_expected = str(col_dict[col]['type'])
     data_type_actual = str(test[r'DATA_TYPE'][0])
     
+    # Check for NA's
+    if 'na' in col_dict[col].keys():
+        if col_dict[col]['na'] == False:
+            if random[col].isnull().any():
+                sys.exit('{} column has NaN values, expected none.'.format(col))
+            else:
+                print('{} column has no NaN values, as expected.'.format(col))
+    else:
+        print("{} column has not been tested for NaN values".format(col))
+        
+    # Check schema properly
     if data_type_expected in ('date', 'datetime'):
-        random_test = 'SELECT TOP 10 PERCENT {} FROM {}.{}.{} order by newid()'.format(col, args.db, args.schema, args.table)
-        random = pd.read_sql(random_test, conn)
+        dt_format = col_dict[col][r'format']
         try:
-            random[col] =  pd.to_datetime(random[col], format = col_dict[col][r'format'])
-            print('{} column has the correct date format({}).'.format(col, data_type_expected))
+            random[col] =  pd.to_datetime(random[col], format = dt_format)
+            print('{} column has the correct date format ({}).'.format(col, dt_format))
         except: # catch *all* exceptions
             e = repr(sys.exc_info())
             sys.exit('Formatting Error: {}'.format(e))
