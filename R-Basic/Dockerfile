@@ -30,7 +30,6 @@ RUN apt-get update && apt-get install -y \
     python2.7-dev \
     ssh \
     putty \
-    sudo \
     software-properties-common \
     && apt-get autoremove \
     && apt-get clean
