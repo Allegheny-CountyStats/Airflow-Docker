@@ -2,3 +2,8 @@
 Data-Validate/.env
 Data-Validate/.ipynb_checkpoints/.env-checkpoint
 Python/instantclient_19_5/*
+.Rproj.user
+Data-Validate/Untitled.ipynb
+Data-Validate/.ipynb_checkpoints/Untitled-checkpoint.ipynb
+.Rhistory
+*.tar
