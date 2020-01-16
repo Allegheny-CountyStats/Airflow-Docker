@@ -5,3 +5,4 @@ pyodbc
 sqlalchemy
 tableauserverclient
 cx_Oracle
+python-dotenv
