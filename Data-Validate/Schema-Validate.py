@@ -2,60 +2,43 @@
 # coding: utf-8
 import pandas as pd
 import sqlalchemy as sa
-import pymssql
+import pyodbc
 import json
 import sys
 import argparse
+import os
 
-parser = argparse.ArgumentParser(description='App to move check the schema of a dataset')
+# Load Passed Variables
+username = os.environ['USER']
+password = os.environ['PASS']
+host = os.environ['HOST']
+database = os.environ['DATABASE']
+schema = os.environ['SCHEMA']
+dept = os.environ['DEPT']
+table = os.environ['TABLE']
 
-parser.add_argument('-path', 
-                    action="store", 
-                    dest="path",
-                    type=str,
-                    default = 'schema.json'
-                    help="File path of schema.")
-parser.add_argument('-db', 
-                    action="store", 
-                    dest="db",
-                    type=str,
-                    help="Datawarehouse db name.")
-parser.add_argument('-schema', 
-                    action="store", 
-                    dest="schema",
-                    type=str,
-                    help="Datawarehouse schema name.")
-parser.add_argument('-table', 
-                    action="store", 
-                    dest="table",
-                    type=str,
-                    help="Datawarehouse table name.")
+# Warehouse Constants
+wh_host = "DEVSQL17.County.Allegheny.Local\CountyStat_DW"
+wh_database = 'DataWarehouse'
 
 # Load Data Warehouse Credentials
-host=os.getenv("host")
-user=os.getenv("user")
-password=os.getenv("password")
-database=os.getenv("database")
+sa_user=os.environ["SA_USER"]
+sa_password=os.environ["SA_PASS"]
 
-with open(args.path, encoding='utf-8-sig') as json_file:
-    data = json.load(json_file)
+wh_conn_string = "mssql+pyodbc://{}:{}@{}/{}?driver=ODBC+Driver+17+for+SQL+Server".format(sa_user, sa_password, wh_host, wh_database)
+conn = sa.create_engine(wh_conn_string)
 
-col_dict = data[r'col_names']
-
-conn = pymssql.connect(host=host, user=user, password=password, database=database)
-
-# Pull Warehouse Types
 sql = """SELECT TABLE_NAME, COLUMN_NAME, DATA_TYPE
 FROM {}.INFORMATION_SCHEMA.COLUMNS
-WHERE TABLE_NAME = '{}'""".format(args.db, args.table)
+WHERE TABLE_NAME = '{}_{}_{}'""".format(wh_database, dept, database, table)
 
 df = pd.read_sql(sql, conn)
 
-# Pull random rows for testing
-random_test = 'SELECT TOP 10 PERCENT * FROM {}.{}.{} order by newid()'.format(args.db, args.schema, args.table)
+schema = json.loads(os.environ['SCHEMA'])
+
+random_test = 'SELECT TOP 10 PERCENT * FROM {}.Preload.{}_{}_{} order by newid()'.format(wh_database, dept, database, table)
 random = pd.read_sql(random_test, conn)
 
-# Test the Schema
 for col in col_dict:
     test = df[df[r'COLUMN_NAME'] == col]
     test = test.reset_index(drop=True)
@@ -74,11 +57,7 @@ for col in col_dict:
             if random[col].isnull().any():
                 sys.exit('{} column has NaN values, expected none.'.format(col))
             else:
-                print('{} column has no NaN values, as expected.'.format(col))
-    else:
-        print("{} column has not been tested for NaN values".format(col))
-        
-    # Check schema properly
+                print('{} column has no NaN values, as expected.')
     if data_type_expected in ('date', 'datetime'):
         dt_format = col_dict[col][r'format']
         try:
