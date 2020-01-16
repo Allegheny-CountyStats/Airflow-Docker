@@ -1,5 +1,5 @@
 {
-  "col_names": {
+  "example_schema": {
     "int_col": {
       "type": "int",
       "na": false
