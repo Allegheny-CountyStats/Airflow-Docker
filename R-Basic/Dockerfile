@@ -71,3 +71,17 @@ RUN install2.r --error \
 COPY ojdbc6.jar /lib/ojdbc6.jar
 # AS 400
 COPY jt400-jdk9-10.1.jar /lib/jt400-jdk9-10.1.jar
+
+RUN apt-get update \
+    && apt-get -y install \
+        apt-transport-https \
+        curl \
+    && apt-get clean
+
+RUN curl https://packages.microsoft.com/keys/microsoft.asc | apt-key add - \
+    && curl https://packages.microsoft.com/config/debian/10/prod.list > /etc/apt/sources.list.d/mssql-release.list \
+    && apt-get update \
+    && ACCEPT_EULA=Y apt-get -y install \
+        msodbcsql17 \
+        libgssapi-krb5-2 \
+    && apt-get clean  
