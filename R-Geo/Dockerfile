@@ -40,4 +40,5 @@ RUN install2.r --error \
     raster \
     geoR \
     geojsonio \
-    geosphere
+    geosphere \
+    tidycensus
