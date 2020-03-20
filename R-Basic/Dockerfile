@@ -84,4 +84,6 @@ RUN curl https://packages.microsoft.com/keys/microsoft.asc | apt-key add - \
     && ACCEPT_EULA=Y apt-get -y install \
         msodbcsql17 \
         libgssapi-krb5-2 \
-    && apt-get clean  
+    && apt-get clean
+    
+RUN  R -e "devtools::install_github('Allegheny-CountyStats/moveitAPI')" 
