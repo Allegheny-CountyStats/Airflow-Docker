@@ -41,4 +41,5 @@ RUN install2.r --error \
     geoR \
     geojsonio \
     geosphere \
-    tidycensus
+    tidycensus \
+    leaflet
