@@ -64,7 +64,8 @@ RUN install2.r --error \
     XML \
     httr \
     dotenv \
-    snakecase
+    snakecase \
+    plotly
 
 # Copy of java connector drivers
 # Oracle
