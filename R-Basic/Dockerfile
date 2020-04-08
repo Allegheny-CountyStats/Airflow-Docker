@@ -65,7 +65,10 @@ RUN install2.r --error \
     httr \
     dotenv \
     snakecase \
-    plotly
+    plotly \
+    pander \
+    kableExtra \
+    treemap
 
 # Copy of java connector drivers
 # Oracle
