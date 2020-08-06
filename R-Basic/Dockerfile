@@ -1,4 +1,4 @@
-FROM rocker/tidyverse
+FROM rocker/tidyverse:3.6.3
 
 MAINTAINER Geoffrey Arnold "geoffrey.arnold@alleghenycounty.us"
 
@@ -53,7 +53,6 @@ RUN install2.r --error \
     rJava \
     odbc \
     DBI \
-    RODBC \
     RJDBC \
     httr \
     jsonlite \
@@ -61,7 +60,6 @@ RUN install2.r --error \
     readxl \
     zoo \
     rlang \
-    XML \
     httr \
     dotenv \
     snakecase \
