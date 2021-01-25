@@ -1,0 +1,14 @@
+requests 
+requests_oauthlib
+argparse
+pandas
+pandleau
+pyodbc
+sqlalchemy
+tableauserverclient
+cx_Oracle
+pyvirtualdisplay
+selenium
+geckodriver-autoinstaller
+xlrd
+openpyxl
