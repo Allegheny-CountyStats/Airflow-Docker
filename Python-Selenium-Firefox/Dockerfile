@@ -1,7 +1,7 @@
-FROM countystats/python3:10
+FROM countystats/python3:1.1
 
 RUN mkdir ~/downloads
-
+RUN apt-get --allow-releaseinfo-change update
 RUN apt-get update                             \
      && apt-get install -y --no-install-recommends \
         ca-certificates curl firefox-esr           \
