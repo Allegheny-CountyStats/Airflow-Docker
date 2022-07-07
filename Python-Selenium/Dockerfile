@@ -1,28 +1,14 @@
-FROM joyzoursky/python-chromedriver
+FROM countystats/python3:10
 
 RUN mkdir ~/downloads
+RUN apt-get --allow-releaseinfo-change update
+RUN apt-get update                             \
+     && apt-get install -y --no-install-recommends \
+        ca-certificates curl firefox-esr           \
+     && rm -fr /var/lib/apt/lists/*                
 
-RUN apt-get update \
-    && apt-get -y install \
-        apt-transport-https \
-        curl \ 
-        sudo \
-    && apt-get clean
-
-RUN sudo ldconfig
-
-RUN curl https://packages.microsoft.com/keys/microsoft.asc | apt-key add - \
-    && curl https://packages.microsoft.com/config/debian/10/prod.list > /etc/apt/sources.list.d/mssql-release.list \
-    && apt-get update \
-    && ACCEPT_EULA=Y apt-get -y install \
-        msodbcsql17 \
-        libgssapi-krb5-2 \
-        unixodbc-dev \
-    && apt-get clean  
-
+COPY geckodriver /usr/bin/geckodriver
+RUN sudo chmod +x /usr/bin/geckodriver
 
 RUN pip3 install --upgrade pip && \
-    pip3 install selenium \
-        pandas \
-        sqlalchemy \
-        pyodbc
+    pip3 install --no-cache-dir selenium
