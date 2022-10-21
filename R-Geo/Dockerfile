@@ -1,4 +1,4 @@
-FROM countystats/r-basic:1.2
+FROM countystats/r-basic:4.2
 
 MAINTAINER Geoffrey Arnold "geoffrey.arnold@alleghenycounty.us"
 
@@ -15,7 +15,6 @@ RUN apt-get update \
     libhdf4-alt-dev \
     libhdf5-dev \
     libjq-dev \
-    liblwgeom-dev \
     libpq-dev \
     libproj-dev \
     libprotobuf-dev \
@@ -27,7 +26,8 @@ RUN apt-get update \
     postgis \
     protobuf-compiler \
     sqlite3 \
-    tk-dev
+    tk-dev 
+
 
 # install dependencies of most cron jobs
 RUN install2.r --error \
@@ -42,4 +42,5 @@ RUN install2.r --error \
     geojsonio \
     geosphere \
     tidycensus \
+    ggmap \
     leaflet
