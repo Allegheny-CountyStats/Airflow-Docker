@@ -10,10 +10,11 @@ import os
 subject = os.getenv('email_subject')
 to_emails = os.getenv('to_emails')
 filename = os.getenv('outfile')
+mail_relay  = os.getenv('mail_relay')
 
 def send_email():
     message="Hello, attached is your CountyStat Report"
-    s = smtplib.SMTP(host='mailrelay.allegheny.local', port=25)
+    s = smtplib.SMTP(host=mail_relay, port=25)
     msg = MIMEMultipart()
     msg['From']='CountyStat@alleghenycounty.us'
     msg['To']=to_emails
