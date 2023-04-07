@@ -1,0 +1,6 @@
+from countystats/r-basic:1.2
+
+MAINTAINER Geoffrey Arnold "geoffrey.arnold@alleghenycounty.us"
+
+COPY moveit-download.R /
+COPY moveit-transfer.R /
