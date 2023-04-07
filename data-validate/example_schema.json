@@ -1,0 +1,1 @@
+[{"COLUMN_NAME":"id","DATA_TYPE":"int", "NAs": false},{"COLUMN_NAME":"address","DATA_TYPE":"varchar"},{"COLUMN_NAME":"date","DATA_TYPE":"datetime"},{"COLUMN_NAME":"boolean","DATA_TYPE":"bit"},{"COLUMN_NAME":"longitude","DATA_TYPE":"float"},{"COLUMN_NAME":"latitude","DATA_TYPE":"float"},{"COLUMN_NAME":"geography","DATA_TYPE":"geography"}]
