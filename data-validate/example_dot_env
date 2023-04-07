@@ -1,0 +1,9 @@
+DATABASE=
+SOURCE=
+DEPT=
+WH_HOST=
+WH_DB=DataWarehouse
+SA_USER=
+SA_PASS=
+TABLE=
+NAS_FALSE=Comma,Separated,Values
