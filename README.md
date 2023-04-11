@@ -1,5 +1,5 @@
 # Airflow-Docker
-Generic Docker containers for CountyStats Airflow needs
+Safe, public Docker containers and and common tasks for data ETL for CountyStats Airflow needs
 
 # Contents:
 - [Python-Selenium](https://hub.docker.com/repository/docker/countystats/selenium): Python and Selenium image used to use the Chrome browser for web-scraping in `python` scripts. Based on an image created by [joyzoursky](https://github.com/joyzoursky/docker-python-chromedriver).
