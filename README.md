@@ -15,7 +15,7 @@ Generic Docker containers for CountyStats Airflow needs
 - [datetime-transform](https://hub.docker.com/repository/docker/countystats/datetime-transform/general): Sometimes Oracle datetimes are not properly formatted when brought into the Data Warehouse. If there are too many to write out the SQL, this task can handle them for you.
 - [geocoder](https://hub.docker.com/repository/docker/countystats/warehouse-geocode/general): Geocode data from tables in the `Master` schema of the Warehouse.
 - [moveit-transfer](https://hub.docker.com/repository/docker/countystats/moveit-transfer/general): Transfer Data to and from the DataWarehouse and the MoveIt Server
-- [moveit-transfer-geo])https://hub.docker.com/repository/docker/countystats/moveit-geo/general): Transfer Geographic data to and from the Data Warehouse and the MoveIt Server.
+- [moveit-transfer-geo](https://hub.docker.com/repository/docker/countystats/moveit-geo/general): Transfer Geographic data to and from the Data Warehouse and the MoveIt Server.
 - [mssql-to-staging](https://hub.docker.com/repository/docker/countystats/mssql-to-staging/general): Transfer Data from MSSQL to the Data Warehouse for schema verification
 - [oracle-to-staging](https://hub.docker.com/repository/docker/countystats/oracle-to-staging/general): Transfer Data from Oracle to the Data Warehouse for schema verfication
 - [sharepoint-to-staging](https://hub.docker.com/repository/docker/countystats/sharepoint-to-staging/general): Transfer Data from Sharepoint/Office365/OneDrive to the Data Warehouse for schema verification.
