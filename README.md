@@ -20,7 +20,7 @@ Generic Docker containers for CountyStats Airflow needs
 - [oracle-to-staging](https://hub.docker.com/repository/docker/countystats/oracle-to-staging/general): Transfer Data from Oracle to the Data Warehouse for schema verfication
 - [sharepoint-to-staging](https://hub.docker.com/repository/docker/countystats/sharepoint-to-staging/general): Transfer Data from Sharepoint/Office365/OneDrive to the Data Warehouse for schema verification.
 - staging-to-warehouse: Transfer data from the Staging schema to its Department schema after data validation.
-r](https://hub.docker.com/repository/docker/countystats/tableau-transfer/general): Publish a Warehouse table or view to the County Tableau Server.
+- [tableau-transfer](https://hub.docker.com/repository/docker/countystats/tableau-transfer/general): Publish a Warehouse table or view to the County Tableau Server.
 - [wprdc-to-staging](https://hub.docker.com/repository/docker/countystats/wprdc-to-staging/general): Transfer data from CKAN (WPRDC) to the CountyStat Data Warehouse.
 
 ## Other
