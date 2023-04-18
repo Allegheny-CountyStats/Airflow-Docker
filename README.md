@@ -24,6 +24,7 @@ Note that many of the default environmental variables are only applicable for in
 *	mssql-to-staging: Transfer Data from MSSQL to the Data Warehouse for schema verification
 *	oracle-to-staging: Transfer Data from Oracle to the Data Warehouse for schema verfication
 *	sharepoint-to-staging: Transfer Data from Sharepoint/Office365/OneDrive to the Data Warehouse for schema verification.
+*	socrata-to-staging: Transfer Data using the Socrata API to the Data Warehouse for schema verification.
 *	staging-to-warehouse: Transfer data from the Staging schema to its Department schema after data validation.
 *	tablea-transfer: Transfer data from the Datawarehouse to the Tableau Server
 *	usps-geocoder: Use the USPS Geocoder script to geocode addresses in the DataWarehouse.
