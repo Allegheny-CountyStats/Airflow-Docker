@@ -26,11 +26,10 @@ for (table in tables) {
   
   # Check to see if table has already been moved in previous run
   if (dbExistsTable(wh_con, SQL(prel_table))) {
-    id_q <- paste0("SELECT DISTINCT [", id_col, "] FROM ", prel_table, "")
-    id_df <- dbGetQuery(wh_con, id_q)
-    id_l <-  as.numeric(nrow(id_df))
-    
     if (table %in% req_tables){
+      id_q <- paste0("SELECT DISTINCT [", id_col, "] FROM ", prel_table, "")
+      id_df <- dbGetQuery(wh_con, id_q)
+      id_l <-  as.numeric(nrow(id_df))
       rc_q <- paste0("SELECT DISTINCT [", id_col, "] FROM ", new_table, "")
       rc_df <- dbGetQuery(wh_con, rc_q)
       if(!nrow(dplyr::anti_join(id_df,rc_df,id_col))>0){
