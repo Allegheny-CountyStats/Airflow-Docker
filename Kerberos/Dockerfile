@@ -15,7 +15,7 @@ RUN apt-get update && \
     libpam-krb5
 
 COPY krb5.conf /etc/
-COPY krb5.keytab /etc/
+# COPY krb5.keytab /etc/ # THIS DOESN'T WORK 
 
 # ++++++++++++++++_____________debugging step, remove upon final build
 ENTRYPOINT ["tail", "-f", "/dev/null"]
