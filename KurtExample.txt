@@ -1,1 +1,8 @@
-docker run -it --rm -e JAVA_TOOL_OPTIONS="-Djava.security.krb5.conf=/etc/krb5.conf" \  --mount type=bind,source=/opt/DWCC/,target=/dwcc-output \  --mount type=bind,source=/opt/DWCC/krb5.conf,target=/etc/krb5.conf \  --mount type=bind,source=/tmp,target=/app/log datadotworld/dwcc:latest catalog-sqlserver \  -a "$ORG_NAME" -d "$DATABASE" -n "$COLLECTION_NAME" -o "/dwcc-output" -P "$PASSWORD" \  -s "$HOST" -u "$USER" -U --upload-location "$UPLOAD_LOCATION" --api-token "$TOKEN" \  --site="$SITE_NAME" --jdbc-property="integratedSecurity=true" \  --jdbc-property="authenticationScheme=JavaKerberos" -S "$SCHEMA"
+docker run -it --rm -e JAVA_TOOL_OPTIONS="-Djava.security.krb5.conf=/etc/krb5.conf"
+\  --mount type=bind,source=/opt/DWCC/,target=/dwcc-output
+\  --mount type=bind,source=/opt/DWCC/krb5.conf,target=/etc/krb5.conf
+\  --mount type=bind,source=/tmp,target=/app/log datadotworld/dwcc:latest catalog-sqlserver
+\  -a "$ORG_NAME" -d "$DATABASE" -n "$COLLECTION_NAME" -o "/dwcc-output" -P "$PASSWORD"
+\  -s "$HOST" -u "$USER" -U --upload-location "$UPLOAD_LOCATION" --api-token "$TOKEN"
+\  --site="$SITE_NAME" --jdbc-property="integratedSecurity=true"
+\  --jdbc-property="authenticationScheme=JavaKerberos" -S "$SCHEMA"
