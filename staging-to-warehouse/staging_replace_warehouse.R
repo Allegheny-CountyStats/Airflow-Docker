@@ -36,6 +36,10 @@ for (table in tables) {
     id_df <- dbGetQuery(wh_con, id_q)
     id_l <-  as.numeric(nrow(id_df))
     
+    id_master <- paste0("SELECT DISTINCT [", id_col, "] FROM ", new_table, "")
+    id_df_master <- dbGetQuery(wh_con, id_master)
+    id_l_master <-  as.numeric(nrow(id_df_master))
+    
     # Detect new rows within tables required to change/add-new-records [nrow new rows in REQ_TABLES > 0]
     if (table %in% req_tables){
       rc_q <- paste0("SELECT DISTINCT [", id_col, "] FROM ", new_table, "")
@@ -46,34 +50,31 @@ for (table in tables) {
       }
     }
     
-    # Iterate through 100 at a time
-    if(id_l > 100) {
-      id_seq <- seq(from = 1, to = id_l, by = 100)
-      for(sub in id_seq) {
-        ids_sub <- id_df[[id_col]][sub:min(sub + 99, id_l)]
-        ids <- paste(ids_sub, collapse = "', '")
-        drop_cmd <- paste0("DELETE FROM ", new_table,
-                           " WHERE ", id_col, " IN ('", ids, "')")
-        dbExecute(wh_con, drop_cmd)
-      }
-    # If fewer than 100 Id's do once
-    } else {
-      ids <- paste(id_df[[id_col]], collapse = "', '")
-      drop_cmd <- paste0("DELETE FROM ", new_table,
-                         " WHERE ", id_col, " IN ('", ids, "')")
-      dbExecute(wh_con, drop_cmd)
-    }
+    # Delete rows
+    sql_insert <- paste("
+    DELETE m
+    FROM ", new_table, " m
+    INNER JOIN ", prel_table, " s ON m.transaction_id = s.transaction_id;")
+    x <- dbExecute(wh_con, sql_insert)
+    print(paste0(x, " rows matched with ", prel_table," and then deleted from ", new_table))
     
+    # Gather column names
     cols <- paste0("SELECT COLUMN_NAME
 FROM INFORMATION_SCHEMA.COLUMNS
 WHERE TABLE_NAME = '", table_name, "' AND TABLE_SCHEMA = 'Staging'")
     col_names <- dbGetQuery(wh_con, cols)$COLUMN_NAME %>%
       paste(collapse = "], [")
     
-    # Append to Master Table
-    sql_insert <- paste("WITH NewData (AS SELECT * FROM", prel_table, ")
-                        INSERT INTO", new_table, "(", col_names, ") SELECT * FROM NewData;")
-    dbExecute(wh_con, sql_insert)
+    # Append to Master Table 
+    sql_insert <- paste0("WITH NewData AS (SELECT * FROM ", prel_table, ")
+                        INSERT INTO ", new_table, " ([", col_names, "]) SELECT * FROM NewData;")
+    y <- dbExecute(wh_con, sql_insert)
+    
+    if(x-y != 0){
+      stop("Rows deleted within master without replacement/update from staging")
+    }{
+      print(paste(y, "records added back to", new_table))
+    }
     
     # Drop Stagging Table
     sql_drop <- paste('DROP TABLE IF EXISTS', prel_table)

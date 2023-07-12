@@ -31,9 +31,10 @@ for (table in tables) {
       paste(collapse = ", ")
     
     # Append to Master Table
-    sql_insert <- paste("WITH NewData (AS SELECT * FROM", prel_table, ")
-                        INSERT INTO", new_table, "(", col_names, ") SELECT * FROM NewData;")
-    dbExecute(wh_con, sql_insert)
+    sql_insert <- paste("WITH NewData AS (SELECT * FROM ", prel_table, ")
+                        INSERT INTO ", new_table, " ([", col_names, "]) SELECT * FROM NewData")
+    y <- dbExecute(wh_con, sql_insert)
+    print(paste(y, "records added to", new_table))
     
     # Drop Stagging Table
     sql_drop <- paste('DROP TABLE IF EXISTS', prel_table)
