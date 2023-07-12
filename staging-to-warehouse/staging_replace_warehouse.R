@@ -29,7 +29,7 @@ for (table in tables) {
   new_table <- paste0("Master.", paste(dept, source, table, sep = "_"))
   
   # Skip if No Table to Append with
-  if(!dbExistsTable(wh_con, SQL(prel_table))) {
+  if(!dbExistsTable(wh_con, SQL(new_table))) {
   # Prepare ID's for Removal
   } else if (dbExistsTable(wh_con, SQL(new_table))) {
     id_q <- paste0("SELECT DISTINCT [", id_col, "] FROM ", prel_table, "")
