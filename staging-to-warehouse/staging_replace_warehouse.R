@@ -70,9 +70,9 @@ WHERE TABLE_NAME = '", table_name, "' AND TABLE_SCHEMA = 'Staging'")
                         INSERT INTO ", new_table, " ([", col_names, "]) SELECT * FROM NewData;")
     y <- dbExecute(wh_con, sql_insert)
     
-    if(x-y != 0){
+    if(x-y < 0){
       stop("Rows deleted within master without replacement/update from staging")
-    }{
+    }else{
       print(paste(y, "records added back to", new_table))
     }
     
