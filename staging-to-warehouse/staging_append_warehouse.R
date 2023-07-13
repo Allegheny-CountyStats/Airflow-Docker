@@ -31,7 +31,7 @@ for (table in tables) {
       paste(collapse = "], [")
     
     # Append to Master Table
-    sql_insert <- paste("WITH NewData AS (SELECT * FROM ", prel_table, ")
+    sql_insert <- paste0("WITH NewData AS (SELECT * FROM ", prel_table, ")
                         INSERT INTO ", new_table, " ([", col_names, "]) SELECT * FROM NewData")
     y <- dbExecute(wh_con, sql_insert)
     print(paste(y, "records added to", new_table))
