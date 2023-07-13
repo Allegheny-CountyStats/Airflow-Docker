@@ -28,7 +28,7 @@ for (table in tables) {
   FROM INFORMATION_SCHEMA.COLUMNS
   WHERE TABLE_NAME = '", table_name, "' AND TABLE_SCHEMA = 'Staging'")
     col_names <- dbGetQuery(wh_con, cols)$COLUMN_NAME %>%
-      paste(collapse = ", ")
+      paste(collapse = "], [")
     
     # Append to Master Table
     sql_insert <- paste("WITH NewData AS (SELECT * FROM ", prel_table, ")
