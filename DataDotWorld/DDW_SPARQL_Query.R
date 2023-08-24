@@ -3,7 +3,7 @@ require(jsonlite)
 require(httr)
 require(DBI)
 
-dotenv::load_dot_env("./.env")
+# dotenv::load_dot_env("./.env")
 
 dept <- Sys.getenv("DEPT")
 source <- Sys.getenv('SOURCE')

@@ -16,6 +16,7 @@ Note that many of the default environmental variables are only applicable for in
 - [Python-Selenium](https://hub.docker.com/repository/docker/countystats/selenium): Python and Selenium image used to use the Chrome browser for web-scraping in `python` scripts. Based on an image created by [joyzoursky](https://github.com/joyzoursky/docker-python-chromedriver).
 *	as400-to-staging: Trasnfer Data to the Data Warehouse for schema verification.
 *	cj_to_warehouse: Transfer data from the Criminal Justice Data Warehouse to the normal DataWarehouse.
+*   DataDotWorld: Transfer data/records from DataDotWorld API
 *	data-validate: Data Schema Validation to ensure column values contain expected value types
 *	datetime-transform: Sometimes Oracle datetimes are not properly formatted when brought into the Data Warehouse. If there are too many to write out the SQL, this task can handle them for you.
 *	geocoder: Use the ALCO Geocoder script to geocode addresses in the DataWarehouse.
