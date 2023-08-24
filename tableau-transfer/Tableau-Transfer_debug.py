@@ -16,6 +16,7 @@ from sqlalchemy.engine import URL
 dept = os.getenv('dept')
 table = os.getenv('table')
 schema = os.getenv('schema', 'Reporting')
+column_q = os.getenv('column_q', '*')
 fix_dates = os.getenv('fix_dates', 'yes')
 
 # Tableau Vars
@@ -38,21 +39,22 @@ wh_pw = os.getenv("wh_pass")
 
 # Build Connection & Query Warehouse
 wh_conn_string = URL.create(
-                    "mssql+pyodbc",
-                    username=wh_un,
-                    password=wh_pw,
-                    host=wh_host,
-                    database=wh_db,
-                    query={
-                        "driver": "ODBC Driver 17 for SQL Server"
-                    },
-                )
+    "mssql+pyodbc",
+    username=wh_un,
+    password=wh_pw,
+    host=wh_host,
+    database=wh_db,
+    query={
+        "driver": "ODBC Driver 17 for SQL Server"  # ,
+        # "trusted_connection": "yes"
+    },
+)
 engine = sa.create_engine(wh_conn_string)
 
 # Read and write table to hyper file
 print('Extracting Data to Hyper file.', file=sys.stderr)
 count = 0
-for df in pd.read_sql_table(table, engine, schema=schema, chunksize=100000):
+for df in pd.read_sql_query("SELECT {} FROM {}.{}".format(column_q, schema, table), engine, chunksize=100000):
     # Avoid issues with numerous nulls in datetime columns
     if fix_dates == 'yes':
         for col in list(df):
