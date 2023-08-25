@@ -9,7 +9,6 @@ import sys
 from tableauhyperapi import TableName
 import re
 import gc
-from sqlalchemy.engine import URL
 
 # Env Variables
 # Data Vars
@@ -38,17 +37,7 @@ wh_un = os.getenv("wh_user")
 wh_pw = os.getenv("wh_pass")
 
 # Build Connection & Query Warehouse
-wh_conn_string = URL.create(
-    "mssql+pyodbc",
-    username=wh_un,
-    password=wh_pw,
-    host=wh_host,
-    database=wh_db,
-    query={
-        "driver": "ODBC Driver 17 for SQL Server"  # ,
-        # "trusted_connection": "yes"
-    },
-)
+wh_conn_string = "mssql+pyodbc://{}:{}@{}/{}?driver=ODBC+Driver+17+for+SQL+Server".format(wh_un, wh_pw, wh_host, wh_db)
 engine = sa.create_engine(wh_conn_string)
 
 # Read and write table to hyper file
