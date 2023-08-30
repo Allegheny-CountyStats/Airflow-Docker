@@ -3,7 +3,17 @@ require(jsonlite)
 require(httr)
 require(DBI)
 
-# dotenv::load_dot_env("./.env")
+dev <- Sys.getenv('DEV', "no")
+
+if (dev == "yes") {
+  dotenv::load_dot_env("./DataDotWorld/.env")
+}
+
+if (dev == "yes") {
+  query_import <- fromJSON(paste0("~/GitHub/DDW_Steward_Check/SPARQL/", Sys.getenv("SPARQL_QUERY_NAME"), ".json"))
+} else {
+  query_import <- fromJSON(Sys.getenv("SPARQL_QUERY"))
+}
 
 dept <- Sys.getenv("DEPT")
 source <- Sys.getenv('SOURCE')
@@ -17,17 +27,35 @@ wh_pass <- Sys.getenv('WH_PASS')
 ddw_org <- Sys.getenv("DDW_ORG", "alleghenycounty")
 ddw_id <- Sys.getenv("DDW_ID", "alco-metadata-reporting")
 Auth_Token <- Sys.getenv('DW_AUTH_TOKEN')
-query_raw <- Sys.getenv('SPARQL_QUERY')
 replace_grep <- Sys.getenv("LOOP_VAR",NA)
 
-
 # Query formatting
+
+# query_DDW_QUERIES <- function(Auth_Token, ddw_owner, ddw_ID) {
+#   url <- paste0("https://api.data.world/v0/projects/",ddw_owner,"/",ddw_ID,"/queries")
+#   response <- VERB("GET", url,
+#                    add_headers('Authorization' = paste('Bearer',Auth_Token)), 
+#                    content_type("application/octet-stream"), 
+#                    accept("application/json")
+#   )
+#   raise <- suppressMessages(httr::content(response, "text"))
+#   result <- jsonlite::fromJSON(raise)
+#   dfs <- lapply(result$records, data.frame, stringsAsFactors = FALSE)
+#   FINAL_set <- do.call(cbind.data.frame, dfs)
+#   new_names <- names(result$records)[-9]
+#   colnames(FINAL_set) <- new_names
+#   return(FINAL_set)
+# }
+# 
+# queries_list <- query_DDW_QUERIES(Auth_Token, ddw_org, ddw_id)
+# query_raw <- as.character(queries_list[queries_list$name == paste0(query_name),"body"])
+query_raw <- query_import$query
 if(!is.na(replace_grep)){
-  gsub("%LOOP_LOOP%",replace_grep,query_raw)
+  query_raw<- gsub("%LOOP_LOOP%",replace_grep,query_raw)
 }
 query_string <- list(query = query_raw)
 
-# Query Functions
+# DDW Query Functions
 user_agent <- function() {
   ret <- sprintf("dwapi-R - %s", "X.X.X")
   ret
