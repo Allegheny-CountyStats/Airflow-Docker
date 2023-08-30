@@ -10,6 +10,6 @@ RUN pip install pantab==3.0.0
 RUN pip install tableauhyperapi==0.0.17537
 RUN pip install numpy --upgrade
 
-COPY Tableau-Transfer_debug.py /
+COPY Tableau-Transfer.py /
 
-CMD [ "python", "-u", "Tableau-Transfer_debug.py" ]
+CMD [ "python", "-u", "Tableau-Transfer.py" ]
