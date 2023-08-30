@@ -13,6 +13,7 @@ if (dev == "yes") {
   query_import <- fromJSON(paste0("~/GitHub/DDW_Steward_Check/SPARQL/", Sys.getenv("SPARQL_QUERY_NAME"), ".json"))
 } else {
   query_import <- fromJSON(Sys.getenv("SPARQL_QUERY"))
+  print(query_import)
 }
 
 dept <- Sys.getenv("DEPT")
@@ -53,6 +54,7 @@ query_raw <- query_import$query
 if(!is.na(replace_grep)){
   query_raw<- gsub("%LOOP_LOOP%",replace_grep,query_raw)
 }
+print(query_raw)
 query_string <- list(query = query_raw)
 
 # DDW Query Functions
@@ -102,17 +104,25 @@ query_DDW_SPARQL <- function(Auth_Token, queryString, ddw_owner, ddw_ID) {
                    content_type("application/octet-stream"), 
                    accept("application/sparql-results+json, application/sparql-results+xml, application/rdf+json, application/rdf+xml, text/tab-separated-values, text/turtle, text/csv")
   )
+  print("response generated")
   raise <- suppressMessages(httr::content(response, "text"))
+  print("text response formatted")
   result <- jsonlite::fromJSON(raise)
+  print("result generated, doing next page add")
   Collections <- next_page_add(result,Auth_Token)#check for next page in api return set
+  print("exporting bindings")
   Collections <- Collections$results$bindings
+  print("producing final set")
   FINAL_set <- Collections %>% 
     tidyr::unnest(result$head$vars, names_sep = "_")%>%
     dplyr::select(-contains("_type"))
+  print("Returned query as Final Set")
   return(FINAL_set)
 }
 
+print(query_string$query)
 QueryReturn <- query_DDW_SPARQL(Auth_Token, queryString = query_string, ddw_owner = ddw_org, ddw_ID = ddw_id)
+print("Query complete")
 
 # Connect to DataWarehouse
 wh_con <- dbConnect(odbc::odbc(), driver = "{ODBC Driver 17 for SQL Server}", 
@@ -140,9 +150,11 @@ if(!is.na(replace_grep)){
     y <- dbExecute(wh_con, sql_insert)
     print(paste(y, "records added to", new_table))
   }else{
+    print("writing table")
     dbWriteTable(wh_con, SQL(prel_table), QueryReturn)
   }
 }else{
+  print("writing table overwrite NO LOOP REPLACE DETECTED")
   dbWriteTable(wh_con, SQL(paste("Staging", table_name, sep =".")), QueryReturn, overwrite = TRUE)
 }
 
