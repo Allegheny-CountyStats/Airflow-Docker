@@ -3,10 +3,10 @@ require(jsonlite)
 require(httr)
 require(DBI)
 
-dev <- Sys.getenv('DEV', "no")
+dev <- Sys.getenv('DEV', "no")# Change to yes when testing locally
 
 if (dev == "yes") {
-  dotenv::load_dot_env("./DataDotWorld/.env")
+  dotenv::load_dot_env("./.env")
 }
 
 if (dev == "yes") {
@@ -25,6 +25,7 @@ wh_db <- Sys.getenv('WH_DB')
 wh_user <- Sys.getenv('WH_USER')
 wh_pass <- Sys.getenv('WH_PASS')
 
+accept_null_return <- Sys.getenv("ACCEPT_NULL_RETURN", "yes")
 ddw_org <- Sys.getenv("DDW_ORG", "alleghenycounty")
 ddw_id <- Sys.getenv("DDW_ID", "alco-metadata-reporting")
 Auth_Token <- Sys.getenv('DW_AUTH_TOKEN')
@@ -97,7 +98,7 @@ next_page_add <- function (api_result, Auth_Token) {
   return(Return_Frame)
 }
 
-query_DDW_SPARQL <- function(Auth_Token, queryString, ddw_owner, ddw_ID) {
+query_DDW_SPARQL <- function(Auth_Token, queryString, ddw_owner, ddw_ID, AcceptNullReturn) {
   url <- paste0("https://api.data.world/v0/sparql/",ddw_owner,"/",ddw_ID)
   response <- VERB("GET", url, query = queryString, 
                    add_headers('Authorization' = paste('Bearer',Auth_Token)), 
@@ -112,16 +113,21 @@ query_DDW_SPARQL <- function(Auth_Token, queryString, ddw_owner, ddw_ID) {
   Collections <- next_page_add(result,Auth_Token)#check for next page in api return set
   print("exporting bindings")
   Collections <- Collections$results$bindings
-  print("producing final set")
-  FINAL_set <- Collections %>% 
-    tidyr::unnest(result$head$vars, names_sep = "_")%>%
-    dplyr::select(-contains("_type"))
-  print("Returned query as Final Set")
-  return(FINAL_set)
+  if (is.null(nrow(Collections)) & AcceptNullReturn == "yes"){
+  }else if (is.null(nrow(Collections)) & AcceptNullReturn == "no"){
+      stop("No rows returned (no results$bindings) and ACCEPT_NULL_RETURN is set to 'no'")
+  }else{
+    print("producing final set")
+    FINAL_set <- Collections %>% 
+      tidyr::unnest(result$head$vars, names_sep = "_")%>%
+      dplyr::select(-contains("_type"))
+    print("Returned query as Final Set")
+    return(FINAL_set)
+    }
 }
 
 print(query_string$query)
-QueryReturn <- query_DDW_SPARQL(Auth_Token, queryString = query_string, ddw_owner = ddw_org, ddw_ID = ddw_id)
+QueryReturn <- query_DDW_SPARQL(Auth_Token, queryString = query_string, ddw_owner = ddw_org, ddw_ID = ddw_id, accept_null_return)
 print("Query complete")
 
 # Connect to DataWarehouse
@@ -133,28 +139,41 @@ wh_con <- dbConnect(odbc::odbc(), driver = "{ODBC Driver 17 for SQL Server}",
 
 # Write Table
 table_name <- paste(dept, source, table, sep = "_")
-
-if(!is.na(replace_grep)){
-  new_table <- paste0("Staging.", paste(dept, source, table, sep = "_"))
-  prel_table <- paste0("Staging.", table_name)
-  if (dbExistsTable(wh_con, SQL(new_table))) {
-    cols <- paste0("SELECT COLUMN_NAME
-  FROM INFORMATION_SCHEMA.COLUMNS
-  WHERE TABLE_NAME = '", table_name, "' AND TABLE_SCHEMA = 'Staging'")
-    col_names <- dbGetQuery(wh_con, cols)$COLUMN_NAME %>%
-      paste(collapse = "], [")
-    
-    # Append to Master Table
-    sql_insert <- paste0("WITH NewData AS (SELECT * FROM ", prel_table, ")
-                        INSERT INTO ", new_table, " ([", col_names, "]) SELECT * FROM NewData")
-    y <- dbExecute(wh_con, sql_insert)
-    print(paste(y, "records added to", new_table))
+if (!is.null(QueryReturn)){
+  if(!is.na(replace_grep)){
+    new_table <- paste0("Staging.", paste(dept, source, table, sep = "_"))
+    if (dbExistsTable(wh_con, SQL(new_table))) {
+      prel_table <- paste0("Staging.NEW_", table_name)
+      dbWriteTable(wh_con, SQL(prel_table), QueryReturn, overwrite = TRUE)
+      cols <- paste0("SELECT COLUMN_NAME
+    FROM INFORMATION_SCHEMA.COLUMNS
+    WHERE TABLE_NAME = '", table_name, "' AND TABLE_SCHEMA = 'Staging'")
+      col_names <- dbGetQuery(wh_con, cols)$COLUMN_NAME %>%
+        paste(collapse = "], [")
+      
+      # Append to Master Table
+      sql_insert <- paste0("WITH NewData AS (SELECT * FROM ", prel_table, ")
+                          INSERT INTO ", new_table, " ([", col_names, "]) SELECT * FROM NewData")
+      y <- dbExecute(wh_con, sql_insert)
+      print(paste(y, "records added to", new_table))
+      # Drop Staging.NEW_ Table
+      sql_drop <- paste('DROP TABLE IF EXISTS', prel_table)
+      dbExecute(wh_con, sql_drop)
+    }else{
+      print("writing table")
+      dbWriteTable(wh_con, SQL(new_table), QueryReturn)
+    }
   }else{
-    print("writing table")
-    dbWriteTable(wh_con, SQL(prel_table), QueryReturn)
+    print("writing table overwrite NO LOOP REPLACE DETECTED")
+    dbWriteTable(wh_con, SQL(paste("Staging", table_name, sep =".")), QueryReturn, overwrite = TRUE)
   }
-}else{
-  print("writing table overwrite NO LOOP REPLACE DETECTED")
-  dbWriteTable(wh_con, SQL(paste("Staging", table_name, sep =".")), QueryReturn, overwrite = TRUE)
+}else if (is.null(QueryReturn) & accept_null_return == "yes"){
+  if (!is.na(replace_grep)){
+    print(paste("No records to add from", replace_grep))
+  }else{
+    print("No records to add and ACCEPT_NULL_RETURN is set to `yes`")  
+    }
+}else if (is.null(QueryReturn) & accept_null_return == "no"){
+  stop("Query Return is Null and ACCEPT_NULL_RETURN is `no`: Error with Query as well since 118 should prevent this message")
 }
 
