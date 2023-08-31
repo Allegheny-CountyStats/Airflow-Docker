@@ -58,6 +58,13 @@ cols = pd.read_sql_query(date_cols, engine)
 
 datecols = cols["COLUMN_NAME"].values.tolist()
 
+int_cols = """SELECT COLUMN_NAME FROM INFORMATION_SCHEMA.COLUMNS
+WHERE TABLE_NAME = '{}' AND DATA_TYPE IN ('int')""".format(table)
+
+cols = pd.read_sql_query(int_cols, engine)
+
+intcols = cols["COLUMN_NAME"].values.tolist()
+
 # Read and write table to hyper file
 print('Extracting Data to Hyper file.', file=sys.stderr)
 count = 0
@@ -68,12 +75,15 @@ for df in pd.read_sql_query("SELECT {} FROM {}.{}".format(column_q, schema, tabl
         print('Fixing Dates', file=sys.stderr)
         for col in list(df):
             if col in datecols:
-                df[col] = pd.to_datetime(df[col])
+                print(f'Set {col} to dateimte', file=sys.stderr)
+                df[col] = pd.to_datetime(df[col], errors = 'coerce')
                 # Remove Timezone for Hyper file
     for col in df.select_dtypes('datetimetz').columns:
+        print(f'Fixing {col} timezone', file=sys.stderr)
         df[col] = df[col].dt.tz_convert(None)
     # Make all integers float for consistency (pandas guesses wrong with chunking)
-    for col in df.select_dtypes('int64').columns:
+    for col in intcols:
+        print(f'Setting {col} to float', file=sys.stderr)
         df[col] = df[col].astype(float)
     if count > 0:
         pantab.frame_to_hyper(df, "temp.hyper", table=TableName("Extract", "Extract"), table_mode="a")
