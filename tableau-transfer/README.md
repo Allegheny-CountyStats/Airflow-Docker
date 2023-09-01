@@ -9,6 +9,10 @@ Image Name: `countystats/tableau-transfer:python`
 * table: Datawarehouse table name*
 * schema: Datawarehouse Schema to pull from
   * Default: `Reporting`
+* INT_REQ: Columns that require formating to INT, necessary for sparse columns that may be formated to text data type in certain chunks
+  * Default: ''
+  * **_Must be comma-seperated with no other spacing_**
+  * Use this to fix `TypeError(f"Mismatched column definitions: {c1_str} != {c2_str}")`
 * name: Data Source name for tableau server*
 * mode: Data source write mode*
   * Default value: `Overwrite` 
@@ -47,7 +51,8 @@ tableau_demog = DockerOperator(
                     'wh_host': wh_connection.host,
                     'wh_db': wh_connection.schema,
                     'wh_user': wh_connection.login,
-                    'wh_pass': wh_connection.password
+                    'wh_pass': wh_connection.password,
+                    'INT_REQ': 'Example,Example2,Example3'
                 },
                 docker_url='unix://var/run/docker.sock',
                 command='python3 Tableau-Transfer.py',

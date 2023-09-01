@@ -18,6 +18,7 @@ table = os.getenv('table')
 schema = os.getenv('schema', 'Reporting')
 column_q = os.getenv('column_q', '*')
 fix_dates = os.getenv('fix_dates', 'yes')
+int_requests = os.getenv('INT_REQ', '')
 
 # Tableau Vars
 name = os.getenv('name')
@@ -85,6 +86,13 @@ for df in pd.read_sql_query("SELECT {} FROM {}.{}".format(column_q, schema, tabl
     for col in intcols:
         print(f'Setting {col} to float', file=sys.stderr)
         df[col] = df[col].astype(float)
+    if int_requests != '':
+        int_req = int_requests.split(",")
+        int_req = [x for x in int_req if x not in intcols]
+        if len(int_req) > 0:
+            for col in int_req:
+                print(f'Setting {col} to float', file=sys.stderr)
+                df[col] = df[col].astype(float)
     if count > 0:
         pantab.frame_to_hyper(df, "temp.hyper", table=TableName("Extract", "Extract"), table_mode="a")
         print('Completed Chunk {}.'.format(count), file=sys.stderr)
