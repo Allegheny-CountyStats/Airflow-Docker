@@ -16,3 +16,10 @@ krb5.keytab
 Kerberos/krb5.keytab
 Kerberos/krb5.conf
 tableau-transfer/.ipynb_checkpoints/Tableau-Transfer-checkpoint.py
+hyperd.log
+temp.hyper
+tableau-transfer/.ipynb_checkpoints/Tableau-Transfer_debug-checkpoint.py
+tableau-transfer/.ipynb_checkpoints/Untitled-checkpoint.ipynb
+tableau-transfer/Untitled.ipynb
+sharepoint-to-staging/.ipynb_checkpoints/sharepoint_to_staging-checkpoint.py
+tableau-transfer/.ipynb_checkpoints/Dockerfile-checkpoint
