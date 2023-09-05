@@ -53,7 +53,7 @@ engine = sa.create_engine(connection_url)
 
 # Pull Date and DateTime Columns
 date_cols = """SELECT COLUMN_NAME FROM INFORMATION_SCHEMA.COLUMNS
-WHERE TABLE_NAME = '{}' AND DATA_TYPE IN ('date', 'datetime')""".format(table)
+WHERE TABLE_NAME = '{}' AND DATA_TYPE IN ('date', 'datetime', 'smalldatetime')""".format(table)
 
 cols = pd.read_sql_query(date_cols, engine)
 
