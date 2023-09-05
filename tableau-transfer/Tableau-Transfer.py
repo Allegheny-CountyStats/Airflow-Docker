@@ -18,6 +18,7 @@ table = os.getenv('table')
 schema = os.getenv('schema', 'Reporting')
 column_q = os.getenv('column_q', '*')
 fix_dates = os.getenv('fix_dates', 'yes')
+int_requests = os.getenv('INT_REQ', '')
 
 # Tableau Vars
 name = os.getenv('name')
@@ -52,11 +53,18 @@ engine = sa.create_engine(connection_url)
 
 # Pull Date and DateTime Columns
 date_cols = """SELECT COLUMN_NAME FROM INFORMATION_SCHEMA.COLUMNS
-WHERE TABLE_NAME = '{}' AND DATA_TYPE IN ('date', 'datetime')""".format(table)
+WHERE TABLE_NAME = '{}' AND DATA_TYPE IN ('date', 'datetime', 'smalldatetime')""".format(table)
 
 cols = pd.read_sql_query(date_cols, engine)
 
 datecols = cols["COLUMN_NAME"].values.tolist()
+
+int_cols = """SELECT COLUMN_NAME FROM INFORMATION_SCHEMA.COLUMNS
+WHERE TABLE_NAME = '{}' AND DATA_TYPE IN ('int')""".format(table)
+
+cols = pd.read_sql_query(int_cols, engine)
+
+intcols = cols["COLUMN_NAME"].values.tolist()
 
 # Read and write table to hyper file
 print('Extracting Data to Hyper file.', file=sys.stderr)
@@ -68,13 +76,23 @@ for df in pd.read_sql_query("SELECT {} FROM {}.{}".format(column_q, schema, tabl
         print('Fixing Dates', file=sys.stderr)
         for col in list(df):
             if col in datecols:
-                df[col] = pd.to_datetime(df[col])
+                print(f'Set {col} to dateimte', file=sys.stderr)
+                df[col] = pd.to_datetime(df[col], errors = 'coerce')
                 # Remove Timezone for Hyper file
     for col in df.select_dtypes('datetimetz').columns:
+        print(f'Fixing {col} timezone', file=sys.stderr)
         df[col] = df[col].dt.tz_convert(None)
     # Make all integers float for consistency (pandas guesses wrong with chunking)
-    for col in df.select_dtypes('int64').columns:
+    for col in intcols:
+        print(f'Setting {col} to float', file=sys.stderr)
         df[col] = df[col].astype(float)
+    if int_requests != '':
+        int_req = int_requests.split(",")
+        int_req = [x for x in int_req if x not in intcols]
+        if len(int_req) > 0:
+            for col in int_req:
+                print(f'Setting {col} to float', file=sys.stderr)
+                df[col] = df[col].astype(float)
     if count > 0:
         pantab.frame_to_hyper(df, "temp.hyper", table=TableName("Extract", "Extract"), table_mode="a")
         print('Completed Chunk {}.'.format(count), file=sys.stderr)
