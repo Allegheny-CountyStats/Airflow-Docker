@@ -19,7 +19,7 @@ schema = os.getenv('schema', 'Reporting')
 column_q = os.getenv('column_q', '*')
 fix_dates = os.getenv('fix_dates', 'yes')
 int_requests = os.getenv('INT_REQ', '')
-int_chunks = os.getenv('INT_CHUNKSIZE', 5000)
+int_chunks = int(os.getenv('INT_CHUNKSIZE', 5000))
 
 # Tableau Vars
 name = os.getenv('name')
