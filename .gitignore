@@ -19,3 +19,6 @@ tableau-transfer/.ipynb_checkpoints/Untitled-checkpoint.ipynb
 tableau-transfer/Untitled.ipynb
 sharepoint-to-staging/.ipynb_checkpoints/sharepoint_to_staging-checkpoint.py
 tableau-transfer/.ipynb_checkpoints/Dockerfile-checkpoint
+*.tdsx
+*.tds
+/tableau-transfer/Data/*

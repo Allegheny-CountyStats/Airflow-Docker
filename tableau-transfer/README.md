@@ -13,6 +13,8 @@ Image Name: `countystats/tableau-transfer:python`
   * Default: ''
   * **_Must be comma-seperated with no other spacing_**
   * Use this to fix `TypeError(f"Mismatched column definitions: {c1_str} != {c2_str}")`
+* INT_CHUNKSIZE: Query chunk size
+  * Default: 5000
 * name: Data Source name for tableau server*
 * mode: Data source write mode*
   * Default value: `Overwrite` 
