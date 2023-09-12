@@ -7,6 +7,7 @@ import sys
 from sqlalchemy.engine import URL
 import requests
 from json import loads
+from send_email import send_email
 
 dev = "YES"
 
@@ -72,31 +73,36 @@ for collection in df_collections:
     catalog_records = pd.concat([df_d, catalog_records], ignore_index=True)
 
 catalog_records = catalog_records.explode('collections')
-df_tables_n = df_tables.merge(catalog_records, left_on='Datatable_Title_value', right_on='id')
+catalog_IRI = catalog_records[['id', 'encodedIri', 'collections']]
+catalog_IRI = pd.concat([catalog_IRI.drop(['collections'], axis=1),
+                         catalog_IRI['collections'].apply(pd.Series)], axis=1)
 
-import ast
+df_tables_n = df_tables.merge(catalog_IRI, left_on=['Datatable_Title_value', 'CollectionName_value'],
+                              right_on=['id', 'collectionId'])
 
-
-def only_dict(d):
-    '''
-    Convert json string representation of dictionary to a python dict
-    '''
-    return ast.literal_eval(d)
-
-
-def list_of_dicts(ld):
-    '''
-    Create a mapping of the tuples formed after
-    converting json strings of list to a python list
-    '''
-    return dict([(list(d.values())[1], list(d.values())[0]) for d in ast.literal_eval(ld)])
+stewards_table = df_tables_n[['DataSteward_value','DataSteward_EMAIL_value']].copy()
+stewards_table['DataSteward_EMAIL_value'] = stewards_table['DataSteward_EMAIL_value'].apply(str.lower)
+stewards_table = stewards_table.drop_duplicates()
+# USED FOR TESTING, COMMENT/DELETE
+# stewards_table = stewards_table[stewards_table['DataSteward_value'].isin(['Daniel Andrus', 'Justin Wier',
+#                                                                           'Ali Greenholt', 'Geoffrey Arnold'])]
+# Opening the html file
+HTMLFile = open("EmailTemplate.html", "r")
+EmailTemplate = HTMLFile.read()
 
 
-# Need to make this work row-wise
-A = pd.json_normalize(catalog_records['collections'].apply(only_dict).tolist()).add_prefix('columnA.')
-B = pd.json_normalize(catalog_records['collections'].apply(list_of_dicts).tolist()).add_prefix('collections.pos.')
-New_Catalog = catalog_records.join([A, B])
-# dupes = df_tables_n['Datatable_Title_value'].duplicated()
-# dupe_rows = df_tables_n[dupes]
-# dupe_row_t = df_tables_n[df_tables_n.Datatable_Title_value == 'HumanResources_JDE_CurrentEmployeeDetails_V']
-# dview = df[df.Datatable_Title_value == 'HumanResources_JDE_CurrentEmployeeDetails_V']
+def message_creater(stewardess, tables, template):
+    link_rows = tables[tables['DataSteward_value'] == stewardess]
+    link_list = ["""<br><li> <a href="https://data.world/alleghenycounty/catalog/resource/{}/columns">{}</a></li>""".
+                 format(link_rows['encodedIri'][row],
+                        link_rows['Datatable_Title_value'][row]) for row in link_rows.index]
+    link_list = "".join(link_list)
+    message = template.format(link_list)
+    return message
+
+
+for steward in stewards_table['DataSteward_value']:
+    Email_Message = message_creater(steward, df_tables_n, EmailTemplate)
+    Steward_Email = stewards_table.loc[stewards_table['DataSteward_value'] == steward, 'DataSteward_EMAIL_value'].values[0]
+    send_email(subject='Test_DDW_Email', to_emails=Steward_Email,
+               message=Email_Message)
