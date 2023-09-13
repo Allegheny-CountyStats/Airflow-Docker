@@ -20,3 +20,4 @@ tableau-transfer/Untitled.ipynb
 sharepoint-to-staging/.ipynb_checkpoints/sharepoint_to_staging-checkpoint.py
 tableau-transfer/.ipynb_checkpoints/Dockerfile-checkpoint
 DataDotWorld/Unfilled Metadata - Stewards.xlsx
+DataDotWorld/__pycache__/send_email.cpython-38.pyc

@@ -9,7 +9,7 @@ import requests
 from json import loads
 from send_email import send_email
 
-dev = "YES"
+dev = "NO"
 
 if dev == "YES":
     from dotenv import load_dotenv
@@ -84,8 +84,9 @@ stewards_table = df_tables_n[['DataSteward_value','DataSteward_EMAIL_value']].co
 stewards_table['DataSteward_EMAIL_value'] = stewards_table['DataSteward_EMAIL_value'].apply(str.lower)
 stewards_table = stewards_table.drop_duplicates()
 # USED FOR TESTING, COMMENT/DELETE
-# stewards_table = stewards_table[stewards_table['DataSteward_value'].isin(['Daniel Andrus', 'Justin Wier',
+# stewards_table = stewards_table[stewards_table['DataSteward_value'].isin(['Daniel Andrus',
 #                                                                           'Ali Greenholt', 'Geoffrey Arnold'])]
+stewards_table = stewards_table[stewards_table['DataSteward_value'].isin(['Daniel Andrus'])]
 # Opening the html file
 HTMLFile = open("EmailTemplate.html", "r")
 EmailTemplate = HTMLFile.read()
