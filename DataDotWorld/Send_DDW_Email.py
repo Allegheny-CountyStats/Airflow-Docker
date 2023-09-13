@@ -13,23 +13,22 @@ dev = "NO"
 
 if dev == "YES":
     from dotenv import load_dotenv
-
     load_dotenv(".env")
 
 # Load Datawarehouse Credentials
-wh_host = os.getenv("wh_host")
-wh_db = os.getenv("wh_db")
-wh_un = os.getenv("wh_user")
-wh_pw = os.getenv("wh_pass")
+wh_host = os.getenv("WH_HOST")
+wh_db = os.getenv("WH_DB")
+wh_un = os.getenv("WH_USER")
+wh_pw = os.getenv("WH_PASS")
 
 # Import table variables
-dept = os.getenv('dept')
+dept = os.getenv('DEPT')
 table = os.getenv('TABLE')
 source = os.getenv('SOURCE')
-schema = os.getenv('schema', 'Master')
+schema = os.getenv('SCHEMA', 'Master')
 
 # DDW variables
-auth_token = os.getenv('dw_auth_token')
+auth_token = os.getenv('DW_AUTH_TOKEN')
 
 # Build Connection & Query Warehouse
 if dev == "NO":
