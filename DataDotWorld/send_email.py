@@ -7,7 +7,7 @@ from email.mime.image import MIMEImage
 import os
 
 # to_emails = 'daniel.andrus@alleghenycounty.us'
-attachment = 'EditRecord.png'
+attachment = 'EditRecord_resize.png'
 
 
 def send_email(subject, to_emails, message):

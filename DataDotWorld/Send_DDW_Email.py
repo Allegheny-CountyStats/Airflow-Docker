@@ -95,9 +95,7 @@ for tablet in df_tables['Datatable_Title_value']:
     column_data = pd.concat([df_d, column_data], ignore_index=True)
     time.sleep(0.01)
 
-data = column_data['collections'].apply(lambda x: x.values()) \
-    .explode() \
-    .apply(pd.Series)
+# data = column_data['collections'].apply(lambda x: x.values()).explode().apply(pd.Series)
 
 column_IRI = column_data.explode('collections')
 column_IRI = column_IRI[['id', 'encodedIri', 'collections']]
@@ -140,7 +138,7 @@ def message_creater(stewardess, tables, template):
         if not subcol_list_filter.empty:
             row_html = []
             for row in subcol_list_filter.index:
-                sub_bullets_list = subcol_list.merge(column_list, left_on=["CollectionName_value", "Datatable_Title_value"],
+                sub_bullets_list = subcol_list_filter.merge(column_list, left_on=["CollectionName_value", "Datatable_Title_value"],
                                                 right_on=["collectionId", "table.tableId"])
                 sub_bullet_html = []
                 for sub in sub_bullets_list.index:
@@ -149,15 +147,25 @@ def message_creater(stewardess, tables, template):
                         format(sub_bullets_list.iloc[sub]['encodedIri_y'],
                                sub_bullets_list.iloc[sub]['title']))
                 sub_bullet_html = "".join(sub_bullet_html)
-                sub_bullet = """<ui>{}</ui>""".format(sub_bullet_html)
+                sub_bullet = """<ul style="padding-left: 30px;type: square;">{}</ul>""".format(sub_bullet_html)
                 row_html.append("""<li><a href="https://data.world/alleghenycounty/catalog/resource/{}/columns">{}</a></li>{}""".
-                                 format(subcol_list_filter.iloc[row]['encodedIri'],
-                                        subcol_list_filter['Datatable_Title_value'],
-                                        sub_bullet))
+                                format(subcol_list_filter.loc[row]['encodedIri'],
+                                       subcol_list_filter.loc[row]['Datatable_Title_value'],
+                                       sub_bullet))
                 row_html = "".join(row_html)
-
-        elif:
-
+                remove_row = subcol_list_filter.loc[[row]]
+                anti_join = link_rows.merge(remove_row, how='outer', indicator=True)
+                anti_join = anti_join[anti_join['_merge'] == 'left_only']
+                link_rows = anti_join.drop(columns=['_merge'])
+        else:
+            row_html = ""
+        link_list = ["""<li><a href="https://data.world/alleghenycounty/catalog/resource/{}/columns">{}</a></li>""".
+                     format(link_rows['encodedIri'][row],
+                            link_rows['Datatable_Title_value'][row]) for row in link_rows.index]
+        link_list = "".join(link_list)
+        final_list = """{}{}""".format(row_html, link_list)
+        final_list = "".join(final_list)
+        link_list = final_list
     else:
         link_list = ["""<li><a href="https://data.world/alleghenycounty/catalog/resource/{}/columns">{}</a></li>""".
                      format(link_rows['encodedIri'][row],
@@ -170,7 +178,7 @@ def message_creater(stewardess, tables, template):
 
 for steward in stewards_table['DataSteward_value']:
     Email_Message = message_creater(steward, df_tables_n, EmailTemplate)
-    Steward_Email = \
+    Steward_Email = stewards_table.loc[stewards_table['DataSteward_value'] == steward, 'DataSteward_EMAIL_value'].values[0]
     stewards_table.loc[stewards_table['DataSteward_value'] == steward, 'DataSteward_EMAIL_value'].values[0]
     send_email(subject='Test_DDW_Email', to_emails=Steward_Email,
                message=Email_Message)
