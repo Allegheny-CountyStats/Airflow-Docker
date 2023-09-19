@@ -23,5 +23,4 @@ ADD DDW_SPARQL_Query.R /
 ADD DDW_Upload.R /
 ADD Send_DDW_Email.py /
 ADD send_email.py /
-ADD EditRecord.png /
-ADD EmailTemplate.html /
+ADD Unfilled_Metadata_Email /
