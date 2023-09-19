@@ -137,26 +137,29 @@ def message_creater(stewardess, tables, template):
         subcol_list_filter = subcol_list[(subcol_list['size'].notnull()) & (subcol_list['size'] > 0)]
         if not subcol_list_filter.empty:
             row_html = []
-            for row in subcol_list_filter.index:
-                sub_bullets_list = subcol_list_filter.merge(column_list, left_on=["CollectionName_value", "Datatable_Title_value"],
-                                                right_on=["collectionId", "table.tableId"])
-                sub_bullet_html = []
-                for sub in sub_bullets_list.index:
-                    sub_bullet_html.append(
-                        """<li><a href="https://data.world/alleghenycounty/catalog/resource/{}">{}</a></li>""".
-                        format(sub_bullets_list.iloc[sub]['encodedIri_y'],
-                               sub_bullets_list.iloc[sub]['title']))
-                sub_bullet_html = "".join(sub_bullet_html)
-                sub_bullet = """<ul style="padding-left: 30px;type: square;">{}</ul>""".format(sub_bullet_html)
-                row_html.append("""<li><a href="https://data.world/alleghenycounty/catalog/resource/{}/columns">{}</a></li>{}""".
-                                format(subcol_list_filter.loc[row]['encodedIri'],
-                                       subcol_list_filter.loc[row]['Datatable_Title_value'],
-                                       sub_bullet))
-                row_html = "".join(row_html)
-                remove_row = subcol_list_filter.loc[[row]]
-                anti_join = link_rows.merge(remove_row, how='outer', indicator=True)
-                anti_join = anti_join[anti_join['_merge'] == 'left_only']
-                link_rows = anti_join.drop(columns=['_merge'])
+            if len(subcol_list_filter.index) < 5:
+                for row in subcol_list_filter.index:
+                    sub_bullets_list = subcol_list_filter.merge(column_list, left_on=["CollectionName_value", "Datatable_Title_value"],
+                                                    right_on=["collectionId", "table.tableId"])
+                    sub_bullet_html = []
+                    for sub in sub_bullets_list.index:
+                        sub_bullet_html.append(
+                            """<li><a href="https://data.world/alleghenycounty/catalog/resource/{}">{}</a></li>""".
+                            format(sub_bullets_list.iloc[sub]['encodedIri_y'],
+                                   sub_bullets_list.iloc[sub]['title']))
+                    sub_bullet_html = "".join(sub_bullet_html)
+                    sub_bullet = """<ul style="padding-left: 30px;type: square;">{}</ul>""".format(sub_bullet_html)
+                    row_html.append("""<li><a href="https://data.world/alleghenycounty/catalog/resource/{}/columns">{}</a></li>{}""".
+                                    format(subcol_list_filter.loc[row]['encodedIri'],
+                                           subcol_list_filter.loc[row]['Datatable_Title_value'],
+                                           sub_bullet))
+                    row_html = "".join(row_html)
+                    remove_row = subcol_list_filter.loc[[row]]
+                    anti_join = link_rows.merge(remove_row, how='outer', indicator=True)
+                    anti_join = anti_join[anti_join['_merge'] == 'left_only']
+                    link_rows = anti_join.drop(columns=['_merge'])
+            else:
+                row_html = ""
         else:
             row_html = ""
         link_list = ["""<li><a href="https://data.world/alleghenycounty/catalog/resource/{}/columns">{}</a></li>""".
