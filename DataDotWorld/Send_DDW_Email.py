@@ -101,7 +101,7 @@ for tablet in df_tables['Datatable_Title_value']:
     d = loads(response.text)
     df_d = pd.json_normalize(d, 'records')
     column_data = pd.concat([df_d, column_data], ignore_index=True)
-    time.sleep(0.01)
+    time.sleep(0.5)
 
 column_IRI = column_data.explode('collections')
 column_IRI = column_IRI[['id', 'encodedIri', 'collections']]
@@ -133,7 +133,7 @@ stewards_table = df_tables_n[['DataSteward_value', 'DataSteward_EMAIL_value']].c
 stewards_table['DataSteward_EMAIL_value'] = stewards_table['DataSteward_EMAIL_value'].apply(str.lower)
 stewards_table = stewards_table.drop_duplicates()
 # USED FOR TESTING, COMMENT/DELETE
-stewards_table = stewards_table[stewards_table['DataSteward_value'].isin(['Daniel Andrus', 'Justin Wier'
+stewards_table = stewards_table[stewards_table['DataSteward_value'].isin(['Daniel Andrus', 'Justin Wier',
                                                                           'Ali Greenholt', 'Geoffrey Arnold'])]
 if dev == "YES":
     stewards_table = stewards_table[stewards_table['DataSteward_value'].isin(['Daniel Andrus'])]
@@ -154,20 +154,27 @@ def message_creater(stewardess, tables, template):
         subcol_list = link_rows.merge(table_column_count[['table.tableId', 'collectionId', 'size']], how='left',
                                       left_on=['Datatable_Title_value', 'CollectionName_value'],
                                       right_on=['table.tableId', 'collectionId'])
-        subcol_list_filter = subcol_list[(subcol_list['size'].notnull()) & (subcol_list['size'] > 0)]
+
+        subcol_list_filter = subcol_list[(subcol_list['size'].isnull()) | (subcol_list['size'] > 0)]
         if not subcol_list_filter.empty:
             row_html = []
             if len(subcol_list_filter.index) < 5:
                 for row in subcol_list_filter.index:
-                    sub_bullets_list = subcol_list_filter.merge(column_list, left_on=["CollectionName_value",
-                                                                                      "Datatable_Title_value"],
-                                                                right_on=["collectionId", "table.tableId"])
+                    sub_bullets_list = subcol_list_filter.merge(column_data,
+                                                                left_on=["CollectionName_value",
+                                                                         "Datatable_Title_value"],
+                                                                right_on=["collectionId",
+                                                                          "table.tableId"])
+                    sub_bullets_list = sub_bullets_list.merge(df[['CollectionName_value', 'ColumnTitle_value', 'Datatable_Title_value']],
+                                                              left_on=["CollectionName_value", "id_y", "table.tableId_y"],
+                                                              right_on=['CollectionName_value', 'ColumnTitle_value', 'Datatable_Title_value'],
+                                                              how="inner")
                     sub_bullet_html = []
                     for sub in sub_bullets_list.index:
                         sub_bullet_html.append(
                             """<li><a href="https://data.world/alleghenycounty/catalog/resource/{}">{}</a></li>""".
                             format(sub_bullets_list.iloc[sub]['encodedIri_y'],
-                                   sub_bullets_list.iloc[sub]['title']))
+                                   sub_bullets_list.iloc[sub]['ColumnTitle_value']))
                     sub_bullet_html = "".join(sub_bullet_html)
                     sub_bullet = """<ul style="padding-left: 30px;type: square;">{}</ul>""".format(sub_bullet_html)
                     row_html.append(
@@ -203,9 +210,11 @@ def message_creater(stewardess, tables, template):
 
 # Loops through every steward in stewards_table, converts specified tables/columns into links to data catalog,
 # creates an email message based on an html template, then emails message to data steward.
+image_attach = '{}/{}'.format(image_subfolder, "EditRecord_resize.png")
+
 for steward in stewards_table['DataSteward_value']:
     Email_Message = message_creater(steward, df_tables_n, EmailTemplate)
     Steward_Email = \
         stewards_table.loc[stewards_table['DataSteward_value'] == steward, 'DataSteward_EMAIL_value'].values[0]
     send_email(subject=email_subject, to_emails=Steward_Email,
-               message=Email_Message)
+               message=Email_Message, attachment=image_attach)

@@ -23,4 +23,4 @@ ADD DDW_SPARQL_Query.R /
 ADD DDW_Upload.R /
 ADD Send_DDW_Email.py /
 ADD send_email.py /
-ADD Unfilled_Metadata_Email /
+ADD Unfilled_Metadata_Email /Unfilled_Metadata_Email
