@@ -25,32 +25,13 @@ wh_db <- Sys.getenv('WH_DB')
 wh_user <- Sys.getenv('WH_USER')
 wh_pass <- Sys.getenv('WH_PASS')
 
-accept_null_return <- Sys.getenv("ACCEPT_NULL_RETURN", "yes")
+accept_null_return <- Sys.getenv("ACCEPT_NULL_RETURN", "yes") # Specifies if null returns from query should be accepted
 ddw_org <- Sys.getenv("DDW_ORG", "alleghenycounty")
 ddw_id <- Sys.getenv("DDW_ID", "alco-metadata-reporting")
 Auth_Token <- Sys.getenv('DW_AUTH_TOKEN')
-replace_grep <- Sys.getenv("LOOP_VAR",NA)
+replace_grep <- Sys.getenv("LOOP_VAR",NA)# If task used in loop, this specifies variable to employ in place of %LOOP_LOOP% placeholder  
 
-# Query formatting
-
-# query_DDW_QUERIES <- function(Auth_Token, ddw_owner, ddw_ID) {
-#   url <- paste0("https://api.data.world/v0/projects/",ddw_owner,"/",ddw_ID,"/queries")
-#   response <- VERB("GET", url,
-#                    add_headers('Authorization' = paste('Bearer',Auth_Token)), 
-#                    content_type("application/octet-stream"), 
-#                    accept("application/json")
-#   )
-#   raise <- suppressMessages(httr::content(response, "text"))
-#   result <- jsonlite::fromJSON(raise)
-#   dfs <- lapply(result$records, data.frame, stringsAsFactors = FALSE)
-#   FINAL_set <- do.call(cbind.data.frame, dfs)
-#   new_names <- names(result$records)[-9]
-#   colnames(FINAL_set) <- new_names
-#   return(FINAL_set)
-# }
-# 
-# queries_list <- query_DDW_QUERIES(Auth_Token, ddw_org, ddw_id)
-# query_raw <- as.character(queries_list[queries_list$name == paste0(query_name),"body"])
+# Import query from env variable
 query_raw <- query_import$query
 if(!is.na(replace_grep)){
   query_raw<- gsub("%LOOP_LOOP%",replace_grep,query_raw)
@@ -174,6 +155,6 @@ if (!is.null(QueryReturn)){
     print("No records to add and ACCEPT_NULL_RETURN is set to `yes`")  
     }
 }else if (is.null(QueryReturn) & accept_null_return == "no"){
-  stop("Query Return is Null and ACCEPT_NULL_RETURN is `no`: Error with Query as well since 118 should prevent this message")
+  stop("Query Return is Null and ACCEPT_NULL_RETURN is `no`: Error with Query as well since line 97 should prevent this message")
 }
 
