@@ -118,7 +118,7 @@ column_list = table_column_count.merge(column_data[['title', 'table.tableId', 'c
                                        how='left', left_on=['table.tableId', 'collectionId'],
                                        right_on=['table.tableId', 'collectionId'])
 
-# Merge unique table names and data steward info with cata log records (brings in data table IRI)
+# Merge unique table names and data steward info with catalog records (brings in data table IRI)
 df_tables_n = df_tables.merge(catalog_IRI, left_on=['Datatable_Title_value', 'CollectionName_value'],
                               right_on=['id', 'collectionId'])
 
@@ -133,8 +133,8 @@ stewards_table = df_tables_n[['DataSteward_value', 'DataSteward_EMAIL_value']].c
 stewards_table['DataSteward_EMAIL_value'] = stewards_table['DataSteward_EMAIL_value'].apply(str.lower)
 stewards_table = stewards_table.drop_duplicates()
 # USED FOR TESTING, COMMENT/DELETE
-stewards_table = stewards_table[stewards_table['DataSteward_value'].isin(['Daniel Andrus', 'Justin Wier',
-                                                                          'Ali Greenholt', 'Geoffrey Arnold'])]
+# stewards_table = stewards_table[stewards_table['DataSteward_value'].isin(['Daniel Andrus', 'Justin Wier',
+#                                                                           'Ali Greenholt', 'Geoffrey Arnold'])]
 if dev == "YES":
     stewards_table = stewards_table[stewards_table['DataSteward_value'].isin(['Daniel Andrus'])]
 
@@ -143,7 +143,11 @@ HTMLFile = open("""{}/{}""".format(image_subfolder, email_filename), "r")
 EmailTemplate = HTMLFile.read()
 
 
-# Function for creating email message, required tables not in parameter:
+# Function for creating email message using a loop of all tables and columns associated with a steward,
+# then returning an email message based on a provided template. Templates must have empty curly brackets within a
+# unordered list html wrapper (<ul>{}</ul>) that designates where bullets will be placed
+#
+# Required tables not in parameter:
 # - table_column_count
 # - column_list
 
