@@ -144,7 +144,7 @@ EmailTemplate = HTMLFile.read()
 
 
 # Function for creating email message using a loop of all tables and columns associated with a steward,
-# then returning an email message based on a provided template. Templates must have empty curly brackets within a
+# then returning an email message based on a provided template. Templates must have empty curly brackets within an
 # unordered list html wrapper (<ul>{}</ul>) that designates where bullets will be placed
 #
 # Required tables not in parameter:
@@ -213,7 +213,7 @@ def message_creater(stewardess, tables, template):
 
 
 # Loops through every steward in stewards_table, converts specified tables/columns into links to data catalog,
-# creates an email message based on an html template, then emails message to data steward.
+# creates an email message based on a html template, then emails message to data steward.
 image_attach = '{}/{}'.format(image_subfolder, "EditRecord_resize.png")
 
 for steward in stewards_table['DataSteward_value']:
