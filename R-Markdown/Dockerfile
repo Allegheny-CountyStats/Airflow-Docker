@@ -1,6 +1,6 @@
 FROM countystats/r-geo:4.2
 
-MAINTAINER Geoffrey Arnold "geoffrey.arnold@alleghenycounty.us"
+MAINTAINER Daniel Andrus "daniel.andrus@alleghenycounty.us"
 
 RUN install2.r --error \
     ggrepel
@@ -11,5 +11,3 @@ RUN apt-get --allow-releaseinfo-change update && apt-get install -y \
     imagemagick
     
 RUN fc-cache -fv
-
-COPY send_email.py \
