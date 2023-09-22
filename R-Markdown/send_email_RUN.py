@@ -7,6 +7,7 @@ from email.mime.image import MIMEImage
 import os
 
 e_to_emails = os.getenv('TO_EMAILS')
+e_from_email = os.getenv('FROM_EMAIL')
 e_subject = os.getenv('SUBJECT')
 e_message = os.getenv('MESSAGE')
 e_attachment = os.getenv('ATTACHMENT_NAME', None)  # specify image attachment with % within html/message
@@ -32,4 +33,5 @@ def send_email(subject, from_email, to_emails, message, mailrelay, attachment=No
     s.quit()
 
 
-send_email(e_subject, e_to_emails, e_message, e_mailrelay, e_attachment)
+send_email(subject=e_subject, from_email=e_from_email, to_emails=e_to_emails, message=e_message,
+           mailrelay=e_mailrelay, attachment=e_attachment)

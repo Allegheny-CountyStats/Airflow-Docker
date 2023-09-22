@@ -11,6 +11,7 @@ Note that many of the default environmental variables are only applicable for in
 - [Python](https://hub.docker.com/repository/docker/countystats/r-geo): Python 3 Docker container with common python modules installed.
 - [R-Basic](https://hub.docker.com/repository/docker/countystats/r-basic): R Docker container with common R packages installed.
 - [R-Geo](https://hub.docker.com/repository/docker/countystats/r-geo): R Docker container with common geospatial packages installed.
+- [R-Markdown](https://github.com/Allegheny-CountyStats/Airflow-Docker/tree/master/R-Markdown): R Docker container with tinytex latex distribution and all other packages necessary for R-Markdown pipelines. Also has python templates for email and sharepoint uploads.
 
 # Images:
 - [Python-Selenium](https://hub.docker.com/repository/docker/countystats/selenium): Python and Selenium image used to use the Chrome browser for web-scraping in `python` scripts. Based on an image created by [joyzoursky](https://github.com/joyzoursky/docker-python-chromedriver).
