@@ -1,6 +1,6 @@
 FROM countystats/r-geo:4.2
 
-MAINTAINER Geoffrey Arnold "daniel.andrus@alleghenycounty.us"
+MAINTAINER Daniel Andrus "daniel.andrus@alleghenycounty.us"
 
 RUN install2.r --error \
     ggthemes \

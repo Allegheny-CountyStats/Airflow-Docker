@@ -12,7 +12,7 @@ from datetime import date, timedelta, datetime
 
 client_id = os.getenv("client_id")
 client_secret = os.getenv("client_secret")
-sp_folder_name = os.getenv("folder_name", None) #Folder required
+sp_folder_name = os.getenv("folder_name", None)  # Folder required
 if sp_folder_name is None:
     sp_folder_name = os.getenv("dept", None)
 drive = os.getenv("drive")
