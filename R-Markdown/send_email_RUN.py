@@ -6,9 +6,13 @@ from email.mime.text import MIMEText
 from email.mime.image import MIMEImage
 import os
 
-# specify single image attachment with % within html/message
-# speciffy single pdf attachment as string name of path/filename in file_attach parameter, or provide python list
-# formated as ['file1.pdf','file2.pdf']
+e_to_emails = os.getenv('TO_EMAILS')
+e_from_email = os.getenv('FROM_EMAIL')
+e_subject = os.getenv('SUBJECT')
+e_message = os.getenv('MESSAGE')
+e_img_attachment = os.getenv('ATTACHMENT_NAME', None)  # specify image attachment with % within html/message
+e_file_attachment = os.getenv('FILE_ATTACHMENT', None)
+e_mailrelay = os.getenv('MAILRELAY')
 
 
 def attach_file(filename, msg_mime):
@@ -50,3 +54,6 @@ def send_email(subject, from_email, to_emails, message, mailrelay, file_attach=N
     del msg
     s.quit()
 
+
+send_email(subject=e_subject, from_email=e_from_email, to_emails=e_to_emails, message=e_message,
+           mailrelay=e_mailrelay, file_attach=e_file_attachment, img_attachment=e_img_attachment)
