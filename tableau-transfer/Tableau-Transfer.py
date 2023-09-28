@@ -19,6 +19,7 @@ schema = os.getenv('schema', 'Reporting')
 column_q = os.getenv('column_q', '*')
 fix_dates = os.getenv('fix_dates', 'yes')
 int_requests = os.getenv('INT_REQ', '')
+int_chunks = int(os.getenv('INT_CHUNKSIZE', 5000))
 
 # Tableau Vars
 name = os.getenv('name')
@@ -69,7 +70,7 @@ intcols = cols["COLUMN_NAME"].values.tolist()
 # Read and write table to hyper file
 print('Extracting Data to Hyper file.', file=sys.stderr)
 count = 0
-for df in pd.read_sql_query("SELECT {} FROM {}.{}".format(column_q, schema, table), engine, chunksize=5000):
+for df in pd.read_sql_query("SELECT {} FROM {}.{}".format(column_q, schema, table), engine, chunksize=int_chunks):
     print(f'Running chunk {count}', file=sys.stderr)
     # Avoid issues with numerous nulls in datetime columns
     if fix_dates == 'yes':
