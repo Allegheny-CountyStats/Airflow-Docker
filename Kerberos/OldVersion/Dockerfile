@@ -14,7 +14,9 @@ RUN apt-get update && \
     krb5-user\
     libpam-krb5
 
-# Needs to be buil within build directory/context using ktutil
-COPY sa00427.keytab /
+COPY krb5.conf /etc/
+# COPY krb5.keytab /etc/ # THIS DOESN'T WORK 
 
-RUN kinit sa00427@COUNTY.ALLEGHENY.LOCAL -k -t sa00427.keytab
+# ++++++++++++++++_____________debugging step, remove upon final build
+ENTRYPOINT ["tail", "-f", "/dev/null"]
+# ++++++++++++++++_____________debugging step, remove upon final build
