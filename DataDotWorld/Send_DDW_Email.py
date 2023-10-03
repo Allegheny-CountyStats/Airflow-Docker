@@ -40,6 +40,7 @@ auth_token = os.getenv('DW_AUTH_TOKEN')
 
 # Build Connection & Query Warehouse
 if dev == "NO":
+    print("Using CountyStat Username")
     connection_url = URL.create(
         "mssql+pyodbc",
         username=wh_un,
@@ -174,6 +175,7 @@ def message_creater(stewardess, tables, template):
                                                               right_on=['CollectionName_value', 'ColumnTitle_value', 'Datatable_Title_value'],
                                                               how="inner")
                     sub_bullet_html = []
+                    row_html = []
                     for sub in sub_bullets_list.index:
                         sub_bullet_html.append(
                             """<li><a href="https://data.world/alleghenycounty/catalog/resource/{}">{}</a></li>""".
