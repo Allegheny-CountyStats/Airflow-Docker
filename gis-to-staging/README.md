@@ -21,7 +21,6 @@ Image name: `countystats/gis-to-staging:r`
 
 ## Example Dag Usage:
 ```
-connection = BaseHook.get_connection("mssql_connection_id")
 wh_connection = BaseHook.get_connection("data_warehouse")
 ...
 pull_permits = DockerOperator(
