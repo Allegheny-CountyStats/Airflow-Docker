@@ -1,7 +1,7 @@
 #  gis-to-staging
 Provide an Allegheny County Esri Service to add to the DataWarehouse.
 
-Image name: `countystats/mssqlto-staging:r`
+Image name: `countystats/gis-to-staging:r`
 
 ## Enviornmental Variables
 * DEPT: Department Name*
