@@ -9,6 +9,8 @@ tables <- unlist(strsplit(tables, ","))
 req_tables <- Sys.getenv('REQ_TABLES')
 req_tables <- unlist(strsplit(req_tables, ","))
 
+target_schema <- Sys.getenv('TARGET_SCHEMA', "Master")
+
 source <- Sys.getenv('SOURCE')
 id_col <- Sys.getenv('ID_COL')
 
@@ -22,7 +24,7 @@ wh_con <- dbConnect(odbc::odbc(), driver = "{ODBC Driver 17 for SQL Server}", se
 for (table in tables) {
   # Get Preload Table
   prel_table <- paste0("Staging.", paste(dept, source, table, sep = "_"))
-  new_table <- paste0("Master.", paste(dept, source, table, sep = "_"))
+  new_table <- paste0(target_schema, ".", paste(dept, source, table, sep = "_"))
   
   # Check to see if table has already been moved in previous run
   if (dbExistsTable(wh_con, SQL(prel_table))) {
@@ -41,10 +43,10 @@ for (table in tables) {
     sql_drop <- paste('DROP TABLE IF EXISTS', new_table)
     dbExecute(wh_con, sql_drop)
     # Move to Finalized Schema
-    sql_move <- paste("ALTER SCHEMA Master TRANSFER", prel_table)
+    sql_move <- paste("ALTER SCHEMA", target_schema, "TRANSFER", prel_table)
     dbExecute(wh_con, sql_move)
   } else {
-    warning(paste("Skipped transfer of ", prel_table, " to Master, table is missing."))
+    warning(paste("Skipped transfer of", prel_table, "to", target_schema, ", table is missing."))
   }
 }
 
