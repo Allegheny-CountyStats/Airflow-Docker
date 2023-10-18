@@ -21,6 +21,7 @@ Note that many of the default environmental variables are only applicable for in
 *	data-validate: Data Schema Validation to ensure column values contain expected value types
 *	datetime-transform: Sometimes Oracle datetimes are not properly formatted when brought into the Data Warehouse. If there are too many to write out the SQL, this task can handle them for you.
 *	geocoder: Use the ALCO Geocoder script to geocode addresses in the DataWarehouse.
+*	gis-to-staging: Provide an Allegheny County Esri Service for transfer to the DataWarehouse.
 *	moveit-transfer: Transfer Data to and from the DataWarehouse and the MoveIt Server
 *	moveit-transfer-geo: Transfer Geographic data to and from the Data Warehouse and the MoveIt Server.
 *	mssql-to-staging: Transfer Data from MSSQL to the Data Warehouse for schema verification
