@@ -1,4 +1,4 @@
-FROM rocker/tidyverse:3.6.3
+FROM rocker/tidyverse:4.2
 
 MAINTAINER Geoffrey Arnold "geoffrey.arnold@alleghenycounty.us"
 
@@ -25,9 +25,6 @@ RUN apt-get update && apt-get install -y \
     git \
     libpq-dev \
     make \
-    python-pip \
-    python2.7 \
-    python2.7-dev \
     ssh \
     putty \
     software-properties-common \
@@ -73,6 +70,7 @@ RUN install2.r --error \
 COPY ojdbc6.jar /lib/ojdbc6.jar
 # AS 400
 COPY jt400-jdk9-10.1.jar /lib/jt400-jdk9-10.1.jar
+COPY moveitAPI_0.1.0.tar.gz /
 
 RUN apt-get update \
     && apt-get -y install \
@@ -87,10 +85,8 @@ RUN curl https://packages.microsoft.com/keys/microsoft.asc | apt-key add - \
         msodbcsql17 \
         libgssapi-krb5-2 \
     && apt-get clean
-    
-RUN  R -e "devtools::install_github('Allegheny-CountyStats/moveitAPI')"
 
-# Install Kerberos
+RUN  R -e "install.packages('moveitAPI_0.1.0.tar.gz', repos = NULL, type = 'source')"
 
 RUN apt-get update && \
     DEBIAN_FRONTEND='noninteractive' apt-get install -y --no-install-recommends \
@@ -102,3 +98,4 @@ RUN apt-get update && \
     adcli\
     krb5-user\
     libpam-krb5
+
