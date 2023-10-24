@@ -1,5 +1,63 @@
 # Documentation on Kerberos Authentication within CountyStats
 
+## [RECOMMENDED] Utilizing R-Basic:4.2.1
+
+An updated r-basic image (tagged 4.2.1) includes kerberos packages necessary for authentication. It requires mounting a 
+folder in Airflow server to the DAG task (/home/mgradmin/Kerberos/). This folder contains a keytab file with credentials
+for the CountyStats service account. 
+
+Example staging to warehouse task with mount:
+```python
+from docker.types import Mount
+
+staging_to_warehouse = DockerOperator(
+                task_id='staging_to_warehouse',
+                image='countystats/staging-to-warehouse:r',
+                api_version='1.39',
+                auto_remove=True,
+                environment={
+                    'DEPT': 'Department_Name',
+                    'TABLES': 'Name,Of,Tables,Comma,Separated',
+                    'REQ_TABLES': 'Tables, Names, Comma,Separated', # New rows required, must exist in TABLES variable
+                    'ID_COL': 'id_col', #ID_COLS must have the same name if doing multiple tables
+                    'SOURCE': connection.schema,
+                    'WH_HOST': wh_connection.host,
+                    'WH_DB': wh_connection.schema,
+                    'WH_USER': wh_connection.login,
+                    'WH_PASS': wh_connection.password
+                },
+                docker_url='unix://var/run/docker.sock',
+                command='Rscript staging_to_warehouse.R',
+                network_mode="bridge",
+                mounts=[
+                    Mount(
+                        source='/home/mgradmin/Kerberos',
+                        target='/Kerberos',
+                        type='bind'
+                    )
+        ]
+        )
+```
+
+Within ETL script connecting to CountyStat Warehouse, the following R commands can be employed:
+```r
+system(kinit sa00427@COUNTY.ALLEGHENY.LOCAL -k -t Kerberos/sa00427.keytab)
+
+wh_con <- dbConnect(odbc::odbc(), driver = "{ODBC Driver 17 for SQL Server}", server = wh_host, database = wh_db, UID = wh_user, pwd = wh_pass, Trusted_Connection = "Yes")
+```
+
+Python alternative:
+```python
+import os
+
+cmd = "kinit sa00427@COUNTY.ALLEGHENY.LOCAL -k -t Kerberos/sa00427.keytab"
+os.system(cmd)
+
+
+```
+
+## Adding Kerberos Authentication to Image built with Dockerfile [DO NOT PUSH IMAGE TO DOCKERHUB]
+
 Steps:
 - Write Keytab File to image folder using ktutil (WriteKeytab.sh) from Putty
   - Can include multiple users from Allegheny.County.Local domain 
