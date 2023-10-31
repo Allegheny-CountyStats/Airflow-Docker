@@ -20,7 +20,11 @@ wh_pass <- Sys.getenv('WH_PASS')
 
 full_table <- paste(dept, source, table, sep = "_")
 
-wh_con <- dbConnect(odbc::odbc(), driver = "{ODBC Driver 17 for SQL Server}", server = wh_host, database = wh_db, UID = wh_user, pwd = wh_pass)
+# Connect to DataWarehouse
+system("kinit sa00427@COUNTY.ALLEGHENY.LOCAL -k -t Kerberos/sa00427.keytab")
+Sys.sleep(2)
+
+wh_con <- dbConnect(odbc::odbc(), driver = "{ODBC Driver 17 for SQL Server}", server = wh_host, database = wh_db, Trusted_Connection = "Yes")
 
 # Try Date Conversion for each Column
 for (col in cols) { 

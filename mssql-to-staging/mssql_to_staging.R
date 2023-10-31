@@ -33,7 +33,9 @@ max_cols <- unlist(strsplit(max_cols_load, ","))
   
 # DB Connection String
 con <- dbConnect(odbc::odbc(), driver = "{ODBC Driver 17 for SQL Server}", server = host, DATABSE = database, UID = username, pwd = password)
-wh_con <- dbConnect(odbc::odbc(), driver = "{ODBC Driver 17 for SQL Server}", server = wh_host, database = wh_db, UID = sa_user, pwd = sa_pass)
+system("kinit sa00427@COUNTY.ALLEGHENY.LOCAL -k -t Kerberos/sa00427.keytab")
+Sys.sleep(2)
+wh_con <- dbConnect(odbc::odbc(), driver = "{ODBC Driver 17 for SQL Server}", server = wh_host, database = wh_db, Trusted_Connection = "Yes")
 
 tables <- unlist(strsplit(tables, ","))
 

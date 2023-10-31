@@ -1,4 +1,4 @@
-from countystats/r-basic:1.1
+FROM countystats/r-basic:latest
 
 MAINTAINER Geoffrey Arnold "geoffrey.arnold@alleghenycounty.us"
 
