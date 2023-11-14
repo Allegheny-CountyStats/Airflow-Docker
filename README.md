@@ -11,14 +11,17 @@ Note that many of the default environmental variables are only applicable for in
 - [Python](https://hub.docker.com/repository/docker/countystats/r-geo): Python 3 Docker container with common python modules installed.
 - [R-Basic](https://hub.docker.com/repository/docker/countystats/r-basic): R Docker container with common R packages installed.
 - [R-Geo](https://hub.docker.com/repository/docker/countystats/r-geo): R Docker container with common geospatial packages installed.
+- [R-Markdown](https://github.com/Allegheny-CountyStats/Airflow-Docker/tree/master/R-Markdown): R Docker container with tinytex latex distribution and all other packages necessary for R-Markdown pipelines. Also has python templates for email and sharepoint uploads.
 
 # Images:
 - [Python-Selenium](https://hub.docker.com/repository/docker/countystats/selenium): Python and Selenium image used to use the Chrome browser for web-scraping in `python` scripts. Based on an image created by [joyzoursky](https://github.com/joyzoursky/docker-python-chromedriver).
 *	as400-to-staging: Trasnfer Data to the Data Warehouse for schema verification.
 *	cj_to_warehouse: Transfer data from the Criminal Justice Data Warehouse to the normal DataWarehouse.
+*   DataDotWorld: Transfer data/records from DataDotWorld API
 *	data-validate: Data Schema Validation to ensure column values contain expected value types
 *	datetime-transform: Sometimes Oracle datetimes are not properly formatted when brought into the Data Warehouse. If there are too many to write out the SQL, this task can handle them for you.
 *	geocoder: Use the ALCO Geocoder script to geocode addresses in the DataWarehouse.
+*	gis-to-staging: Provide an Allegheny County Esri Service for transfer to the DataWarehouse.
 *	moveit-transfer: Transfer Data to and from the DataWarehouse and the MoveIt Server
 *	moveit-transfer-geo: Transfer Geographic data to and from the Data Warehouse and the MoveIt Server.
 *	mssql-to-staging: Transfer Data from MSSQL to the Data Warehouse for schema verification

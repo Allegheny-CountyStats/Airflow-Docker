@@ -1,15 +1,34 @@
 FROM countystats/r-geo:4.2
 
-MAINTAINER Geoffrey Arnold "geoffrey.arnold@alleghenycounty.us"
+MAINTAINER Daniel Andrus "daniel.andrus@alleghenycounty.us"
 
 RUN install2.r --error \
-    ggrepel
-    
-RUN apt-get --allow-releaseinfo-change update && apt-get install -y \
+    ggthemes \
+    circlize
+
+RUN apt-get update --allow-releaseinfo-change && apt-get install -y \
     texlive \
     texlive-full \
     imagemagick
-    
+
 RUN fc-cache -fv
 
-COPY send_email.py \
+RUN apt-get update --allow-releaseinfo-change && apt-get install -y \
+    python3-pip
+
+RUN pip3 install pandas \
+    oauthlib \
+    requests_oauthlib
+
+RUN install2.r --error \
+    ggrepel \
+    gghighlight \
+    DescTools \
+    treemapify \
+    bizdays \
+    formattable \
+    calendR \
+    pracma \
+    patchwork \
+    ggplot2 \
+    janitor

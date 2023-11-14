@@ -8,6 +8,8 @@ dept <- Sys.getenv("DEPT")
 tables <- Sys.getenv('TABLES') # List/Dict
 tables <- unlist(strsplit(tables, ","))
 
+target_schema <- Sys.getenv('TARGET_SCHEMA', "Master")
+
 source <- Sys.getenv('SOURCE')
 
 wh_host <- Sys.getenv('WH_HOST')
@@ -21,7 +23,7 @@ for (table in tables) {
   # Get Preload Table
   table_name <-  paste(dept, source, table, sep = "_")
   prel_table <- paste0("Staging.", table_name)
-  new_table <- paste0("Master.", paste(dept, source, table, sep = "_"))
+  new_table <- paste0(target_schema, ".", paste(dept, source, table, sep = "_"))
   
   if (dbExistsTable(wh_con, SQL(new_table))) {
     cols <- paste0("SELECT COLUMN_NAME
@@ -40,7 +42,7 @@ for (table in tables) {
     sql_drop <- paste('DROP TABLE IF EXISTS', prel_table)
     dbExecute(wh_con, sql_drop)
   } else {
-    sql_move <- paste("ALTER SCHEMA Master TRANSFER", prel_table)
+    sql_move <- paste("ALTER SCHEMA", target_schema, "TRANSFER", prel_table)
     dbExecute(wh_con, sql_move)
   }
 }

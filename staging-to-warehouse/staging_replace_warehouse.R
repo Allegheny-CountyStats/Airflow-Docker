@@ -11,6 +11,8 @@ tables <- unlist(strsplit(tables, ","))
 req_tables <- Sys.getenv('REQ_TABLES')
 req_tables <- unlist(strsplit(req_tables, ","))
 
+target_schema <- Sys.getenv('TARGET_SCHEMA', "Master")
+
 id_col <- Sys.getenv("ID_COL")
 source <- Sys.getenv('SOURCE')
 
@@ -26,7 +28,7 @@ for (table in tables) {
   # Get Preload Table
   table_name <-  paste(dept, source, table, sep = "_")
   prel_table <- paste0("Staging.", table_name)
-  new_table <- paste0("Master.", paste(dept, source, table, sep = "_"))
+  new_table <- paste0(target_schema, ".", paste(dept, source, table, sep = "_"))
   
   # Skip if No Table to Append with
   if(dbExistsTable(wh_con, SQL(new_table))) {
@@ -56,11 +58,11 @@ WHERE TABLE_NAME = '", table_name, "' AND TABLE_SCHEMA = 'Staging'")
       print(paste(y, "records added back to", new_table))
     }
     
-    # Drop Stagging Table
+    # Drop Staging Table
     sql_drop <- paste('DROP TABLE IF EXISTS', prel_table)
     dbExecute(wh_con, sql_drop)
   } else {
-    sql_move <- paste("ALTER SCHEMA Master TRANSFER", prel_table)
+    sql_move <- paste("ALTER SCHEMA", target_schema, "TRANSFER", prel_table)
     dbExecute(wh_con, sql_move)
   }
 }

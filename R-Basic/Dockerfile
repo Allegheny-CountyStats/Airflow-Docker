@@ -42,7 +42,7 @@ RUN apt-get update -qq && apt-get -y --no-install-recommends install \
   libxml2-dev \
   libcairo2-dev \
   libpq-dev \
-    libicu-dev \ 
+    libicu-dev \
     libbz2-dev \
   liblzma-dev \
   default-jdk \
@@ -88,4 +88,17 @@ RUN curl https://packages.microsoft.com/keys/microsoft.asc | apt-key add - \
         libgssapi-krb5-2 \
     && apt-get clean
     
-RUN  R -e "devtools::install_github('Allegheny-CountyStats/moveitAPI')" 
+RUN  R -e "devtools::install_github('Allegheny-CountyStats/moveitAPI')"
+
+# Install Kerberos
+
+RUN apt-get update && \
+    DEBIAN_FRONTEND='noninteractive' apt-get install -y --no-install-recommends \
+    realmd\
+    libpam-sss\
+    libnss-sss\
+    sssd\
+    sssd-tools\
+    adcli\
+    krb5-user\
+    libpam-krb5
