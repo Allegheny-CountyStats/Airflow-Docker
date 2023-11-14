@@ -28,13 +28,6 @@ RUN apt-get update && apt-get install -y \
     && apt-get autoremove \
     && apt-get clean
 
-
-RUN apt-get install -y unixodbc-dev \
-  && curl https://packages.microsoft.com/keys/microsoft.asc | apt-key add - \
-  && curl https://packages.microsoft.com/config/ubuntu/$(lsb_release -rs)/prod.list > /etc/apt/sources.list.d/mssql-release.list \
-  && sudo apt-get update \
-  && sudo ACCEPT_EULA=Y apt-get -q -y install msodbcsql17
-
 # system libraries of general use
 RUN apt-get update && apt-get install -y \
     unixodbc \
@@ -95,3 +88,14 @@ RUN apt-get update && \
     krb5-user\
     libpam-krb5
 
+RUN apt-get install -y unixodbc-dev \
+  && curl https://packages.microsoft.com/keys/microsoft.asc | apt-key add - \
+  && curl https://packages.microsoft.com/config/ubuntu/$(lsb_release -rs)/prod.list > /etc/apt/sources.list.d/mssql-release.list \
+  && sudo apt-get update \
+  && sudo ACCEPT_EULA=Y apt-get -q -y install msodbcsql17
+
+RUN apt-get install -y unixodbc-dev \
+  && curl https://packages.microsoft.com/keys/microsoft.asc | apt-key add - \
+  && curl https://packages.microsoft.com/config/ubuntu/$(lsb_release -rs)/prod.list > /etc/apt/sources.list.d/mssql-release.list \
+  && sudo apt-get update \
+  && sudo ACCEPT_EULA=Y apt-get install -y msodbcsql18

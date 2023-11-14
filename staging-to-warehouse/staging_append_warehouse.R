@@ -19,7 +19,7 @@ wh_pass <- Sys.getenv('WH_PASS')
 
 system("kinit sa00427@COUNTY.ALLEGHENY.LOCAL -k -t Kerberos/sa00427.keytab")
 Sys.sleep(2)
-wh_con <- dbConnect(odbc::odbc(), driver = "{ODBC Driver 17 for SQL Server}", server = wh_host, database = wh_db, Trusted_Connection = "Yes")
+wh_con <- dbConnect(odbc::odbc(), driver = "{ODBC Driver 17 for SQL Server}", server = wh_host, database = wh_db, Trusted_Connection = "Yes", TrustServerCertificate = "yes")
 
 for (table in tables) {
   # Get Preload Table
