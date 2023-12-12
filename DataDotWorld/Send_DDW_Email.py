@@ -5,13 +5,16 @@ import sqlalchemy as sa
 import pantab
 import sys
 from sqlalchemy.engine import URL
+from sqlalchemy.orm import Session
 import requests
 from json import loads
 from send_email import send_email
 import time
+from requests.exceptions import SSLError
+from sqlalchemy import delete, Table, MetaData, insert, select
 
 # Change to "NO" when in Dev/Prod servers
-dev = "NO"
+dev = "YES"
 
 if dev == "YES":
     from dotenv import load_dotenv
@@ -94,15 +97,23 @@ column_data = pd.DataFrame()
 
 for tablet in df_tables['Datatable_Title_value']:
     sourceid = df_tables.loc[df_tables['Datatable_Title_value'] == tablet, ['CollectionName_value']]
-    response = requests.get(
-        "https://api.data.world/v0/metadata/data/sources/alleghenycounty/{}/tables/{}/columns".
-        format(sourceid.iloc[0]['CollectionName_value'],
-               tablet),
-        headers=headers)
+    attempt = 0
+    while True:
+        try:
+            response = requests.get(
+                "https://api.data.world/v0/metadata/data/sources/alleghenycounty/{}/tables/{}/columns".
+                format(sourceid.iloc[0]['CollectionName_value'],
+                       tablet),
+                headers=headers)
+            print(response.url, "[", attempt, "]")
+            break
+        except SSLError:
+            continue
+
     d = loads(response.text)
     df_d = pd.json_normalize(d, 'records')
     column_data = pd.concat([df_d, column_data], ignore_index=True)
-    time.sleep(0.5)
+    time.sleep(0.1)
 
 column_IRI = column_data.explode('collections')
 column_IRI = column_IRI[['id', 'encodedIri', 'collections']]
@@ -134,10 +145,12 @@ stewards_table = df_tables_n[['DataSteward_value', 'DataSteward_EMAIL_value']].c
 stewards_table['DataSteward_EMAIL_value'] = stewards_table['DataSteward_EMAIL_value'].apply(str.lower)
 stewards_table = stewards_table.drop_duplicates()
 # USED FOR TESTING, COMMENT/DELETE
-# stewards_table = stewards_table[stewards_table['DataSteward_value'].isin(['Daniel Andrus', 'Justin Wier',
-#                                                                           'Ali Greenholt', 'Geoffrey Arnold'])]
+stewards_table = stewards_table[stewards_table['DataSteward_value'].isin(['Daniel Andrus', 'Justin Wier',
+                                                                          'Ali Greenholt', 'Geoffrey Arnold'])]
 if dev == "YES":
     stewards_table = stewards_table[stewards_table['DataSteward_value'].isin(['Daniel Andrus'])]
+
+# stewards_table.to_sql(name="Stewards_Table", con=engine, index=False, if_exists="replace", schema="Reporting")
 
 # Opening the html file
 HTMLFile = open("""{}/{}""".format(image_subfolder, email_filename), "r")
@@ -217,10 +230,31 @@ def message_creater(stewardess, tables, template):
 # Loops through every steward in stewards_table, converts specified tables/columns into links to data catalog,
 # creates an email message based on a html template, then emails message to data steward.
 image_attach = '{}/{}'.format(image_subfolder, "EditRecord_resize.png")
+metadata = MetaData(schema='Reporting')
+SQL_stewardTable = Table(
+    'ALCO_ddw_StewardsEmailed_Table',
+    metadata,
+    autoload=True,
+    autoload_with=engine
+)
+session = Session(engine)
 
 for steward in stewards_table['DataSteward_value']:
-    Email_Message = message_creater(steward, df_tables_n, EmailTemplate)
-    Steward_Email = \
-        stewards_table.loc[stewards_table['DataSteward_value'] == steward, 'DataSteward_EMAIL_value'].values[0]
-    send_email(subject=email_subject, to_emails=Steward_Email,
-               message=Email_Message, attachment=image_attach)
+    check_existing = SQL_stewardTable.select().where(SQL_stewardTable.c.DataSteward_value == steward)
+    check_existing_result = session.execute(check_existing).fetchall()
+    if len(check_existing_result) == 0:
+        Email_Message = message_creater(steward, df_tables_n, EmailTemplate)
+        Steward_Email = \
+            stewards_table.loc[stewards_table['DataSteward_value'] == steward, 'DataSteward_EMAIL_value'].values[0]
+        send_email(subject=email_subject, to_emails=Steward_Email,
+                   message=Email_Message, attachment=image_attach)
+        with engine.begin() as conn:
+            result = conn.execute(
+                delete(SQL_stewardTable)
+                .where(SQL_stewardTable.c.DataSteward_value == steward)
+            )
+        stmt = insert(SQL_stewardTable).values(DataSteward_value = steward,
+                                               DataSteward_EMAIL_value = Steward_Email)
+        with engine.connect() as conn:
+            result = conn.execute(stmt)
+
