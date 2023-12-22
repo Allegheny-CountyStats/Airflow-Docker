@@ -1,4 +1,4 @@
-FROM countystats/r-basic:testing
+FROM countystats/r-basic:latest
 
 MAINTAINER Daniel Andrus "daniel.andrus@alleghenycounty.us"
 
