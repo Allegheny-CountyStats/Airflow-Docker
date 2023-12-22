@@ -1,36 +1,36 @@
-FROM rocker/tidyverse:3.6.3
+FROM rocker/tidyverse:latest
 
 MAINTAINER Geoffrey Arnold "geoffrey.arnold@alleghenycounty.us"
 
-# system libraries of general use
 RUN apt-get update && apt-get install -y \
-    sudo \
     pandoc \
     pandoc-citeproc \
-    libcurl4-gnutls-dev \
     libcairo2-dev \
     libxt-dev \
     libssl-dev \
     libssh2-1-dev \
-    curl \
     libmpfr-dev \
-    unixodbc \
-    unixodbc-dev \
+    curl \
+    sudo \
+    libcurl4-gnutls-dev \
     freetds-dev \
     freetds-bin \
-    tdsodbc \
     build-essential \
     ca-certificates \
     gcc \
     git \
     libpq-dev \
     make \
-    python-pip \
-    python2.7 \
-    python2.7-dev \
     ssh \
     putty \
     software-properties-common \
+    apt-transport-https \
+    && apt-get autoremove \
+    && apt-get clean
+
+# system libraries of general use
+RUN apt-get update && apt-get install -y \
+    unixodbc \
     && apt-get autoremove \
     && apt-get clean
 
@@ -42,8 +42,8 @@ RUN apt-get update -qq && apt-get -y --no-install-recommends install \
   libxml2-dev \
   libcairo2-dev \
   libpq-dev \
-    libicu-dev \
-    libbz2-dev \
+  libicu-dev \
+  libbz2-dev \
   liblzma-dev \
   default-jdk \
   && R CMD javareconf
@@ -73,24 +73,9 @@ RUN install2.r --error \
 COPY ojdbc6.jar /lib/ojdbc6.jar
 # AS 400
 COPY jt400-jdk9-10.1.jar /lib/jt400-jdk9-10.1.jar
+COPY moveitAPI_0.1.0.tar.gz /
 
-RUN apt-get update \
-    && apt-get -y install \
-        apt-transport-https \
-        curl \
-    && apt-get clean
-
-RUN curl https://packages.microsoft.com/keys/microsoft.asc | apt-key add - \
-    && curl https://packages.microsoft.com/config/debian/10/prod.list > /etc/apt/sources.list.d/mssql-release.list \
-    && apt-get update \
-    && ACCEPT_EULA=Y apt-get -y install \
-        msodbcsql17 \
-        libgssapi-krb5-2 \
-    && apt-get clean
-    
-RUN  R -e "devtools::install_github('Allegheny-CountyStats/moveitAPI')"
-
-# Install Kerberos
+RUN  R -e "install.packages('moveitAPI_0.1.0.tar.gz', repos = NULL, type = 'source')"
 
 RUN apt-get update && \
     DEBIAN_FRONTEND='noninteractive' apt-get install -y --no-install-recommends \
@@ -102,3 +87,15 @@ RUN apt-get update && \
     adcli\
     krb5-user\
     libpam-krb5
+
+RUN apt-get install -y unixodbc-dev \
+  && curl https://packages.microsoft.com/keys/microsoft.asc | apt-key add - \
+  && curl https://packages.microsoft.com/config/ubuntu/$(lsb_release -rs)/prod.list > /etc/apt/sources.list.d/mssql-release.list \
+  && sudo apt-get update \
+  && sudo ACCEPT_EULA=Y apt-get -q -y install msodbcsql17
+
+RUN apt-get install -y unixodbc-dev \
+  && curl https://packages.microsoft.com/keys/microsoft.asc | apt-key add - \
+  && curl https://packages.microsoft.com/config/ubuntu/$(lsb_release -rs)/prod.list > /etc/apt/sources.list.d/mssql-release.list \
+  && sudo apt-get update \
+  && sudo ACCEPT_EULA=Y apt-get install -y msodbcsql18
