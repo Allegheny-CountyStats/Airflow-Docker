@@ -35,14 +35,12 @@ append_type <- Sys.getenv('APPEND_TYPE', unset = "MAX")
 append_sign <- Sys.getenv('APPEND_SIGN', unset = ">")
 
 # Build the driver using JDBC
-system("kinit sa00427@COUNTY.ALLEGHENY.LOCAL -k -t Kerberos/sa00427.keytab")
-Sys.sleep(2)
 jdbcDriver <- JDBC(driverClass="oracle.jdbc.OracleDriver", classPath="/lib/ojdbc6.jar")
 # jdbcDriver <- JDBC(driverClass="oracle.jdbc.OracleDriver", classPath="C:/Users/T112332/AppData/Roaming/DBeaverData/drivers/maven/maven-central/com.oracle.database.jdbc/ojdbc8-12.2.0.1.jar")
 
 con <- dbConnect(jdbcDriver, paste0("jdbc:oracle:thin:@//", host, ":", port, "/", database), username, password)
 # DB Connection String
-wh_con <- dbConnect(odbc::odbc(), driver = "{ODBC Driver 17 for SQL Server}", server = wh_host, database = wh_db, Trusted_Connection = "Yes", TrustServerCertificate = "yes")
+wh_con <- dbConnect(odbc::odbc(), driver = "{ODBC Driver 17 for SQL Server}", server = wh_host, database = wh_db, UID = wh_user, pwd = wh_pass)
 
 tables <- unlist(strsplit(tables, ","))
 
