@@ -50,3 +50,32 @@ table_pull = DockerOperator(
                 network_mode="bridge"
         )
 ```
+
+## Push to Criminal Justice from Warehouse:
+
+To perform the opposite data flow (data-warehouse to criminal-justice), flip the connection parameters used in the above example as done below:
+
+```
+push_cj = DockerOperator(
+        task_id='push_cj',
+        image='countystats/cj-to-warehouse:r',
+        api_version='1.39',
+        auto_remove=True,
+        execution_timeout=timedelta(minutes=20),
+        environment={
+            'DEPT': dept,
+            'SOURCE': 'EXAMPLE_SCHEMA',
+            'TABLES': 'LIST,OF,TABLES,FROM,DATA,WAREHOUSE,COMMA,SEPERATED',
+            'CJ_USER': wh_connection.login,
+            'CJ_PASS': wh_connection.password,
+            'CJ_HOST': wh_connection.host,
+            'CJ_DB': wh_connection.schema,
+            'WH_HOST': cj_connection.host,
+            'WH_DB': cj_connection.schema,
+            'WH_USER': cj_connection.login,
+            'WH_PASS': cj_connection.password
+        },
+        docker_url='unix://var/run/docker.sock',
+        network_mode="bridge"
+    )
+```
