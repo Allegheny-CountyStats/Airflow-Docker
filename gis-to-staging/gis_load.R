@@ -34,9 +34,12 @@ if (!dbExistsTable(wh_con, SQL(table_name))) {
   where <- "1%3D1"
 }
 
+login <- Sys.getenv("LOGIN")
+pwd <- Sys.getenv("PASSWORD")
+
 # Generate Esri Token
-headers <- list("username" = Sys.getenv("LOGIN"),
-                "password" = Sys.getenv("PASSWORD"),
+headers <- list("username" = login,
+                "password" = pwd,
                 "referer" = "https://www.arcgis.com",
                 "f" = "json")
 p <- POST("https://www.arcgis.com/sharing/generateToken", body = headers)
@@ -48,14 +51,14 @@ offset <- offset_orig
 # Get First Page
 url_2 <- paste0(service, "query?where=", where, "&outFields=*&returnGeometry=true&featureEncoding=esriDefault&multipatchOption=xyFootprint&resultRecordCount=", offset, "&f=pgeojson&token=", token)
 
-temp <- read_sf(GET(url_2)) %>%
+temp <- read_sf(RETRY("GET", url_2)) %>%
   mutate_at(vars(contains("date")), function(x) {as.POSIXct(as.numeric(x) / 1000, origin = "1970-01-01")})
 
 # Load more Pages
 while (nrow(temp) %% offset_orig == 0) {
   url_2 <- paste0(service, "query?where=", where, "&outFields=*&returnGeometry=true&featureEncoding=esriDefault&multipatchOption=xyFootprint&resultOffset=", offset, "&resultRecordCount=2000&f=pgeojson&token=", token)
   
-  temp <- read_sf(GET(url_2)) %>%
+  temp <- read_sf(RETRY("GET", url_2)) %>%
     mutate_at(vars(contains("date")), function(x) {as.POSIXct(as.numeric(x) / 1000, origin = "1970-01-01")}) %>%
     bind_rows(temp)
   
