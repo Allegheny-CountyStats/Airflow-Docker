@@ -29,3 +29,4 @@ DataDotWorld/__pycache__/send_email.cpython-38.pyc
 *.tds
 /tableau-transfer/Data/*
 .RData
+postgres-to-warehouse/Test.R
