@@ -42,14 +42,15 @@ if (nchar(sql_statement) > 10){
 } else {
   # DF to bind to
   offset <- 0
-  url_string <- paste0("https://data.wprdc.org/api/3/action/datastore_search?resource_id=",resource_code, "&limit=", offset_amount, "&offset=", offset)
+  url_string <- paste0("https://data.wprdc.org/api/3/action/datastore_search?resource_id=", resource_code, "&limit=", offset_amount)
   g <- GET(url_string)
   temp <- fromJSON(content(g, "text"))$result$records
   results <- temp
-  while (nrow(temp) > 0) {
+  while (nrow(temp) == offset_amount) {
     offset <- offset + offset_amount
+    print(paste("Grabbing rows", offset, "through", offset + offset_amount))
     url_string <- paste0("https://data.wprdc.org/api/3/action/datastore_search?resource_id=",resource_code, "&limit=", offset_amount, "&offset=", offset)
-    g <- GET(url_string)
+    g <- RETRY("GET", url_string)
     temp <- fromJSON(content(g, "text"))$result$records %>%
       as_tibble()
     results <- bind_rows(results, temp)
