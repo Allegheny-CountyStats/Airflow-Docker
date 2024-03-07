@@ -29,7 +29,7 @@ date_col <- Sys.getenv('date_col', append_col)
 jdbcDriver <- JDBC(driverClass="com.ibm.as400.access.AS400JDBCDriver", classPath="/lib/jt400-jdk9-10.1.jar")
 
 # Connections
-ibm <- dbConnect(jdbcDriver, host, user = uid, password = pwd)
+ibm <- dbConnect(jdbcDriver, host, user = uid, password = pwd, secure = "true")
 # DB Connection String
 wh_con <- dbConnect(odbc::odbc(), driver = "{ODBC Driver 17 for SQL Server}", server = wh_host, database = wh_db, UID = wh_user, pwd = wh_pass)
 

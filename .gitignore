@@ -30,3 +30,4 @@ DataDotWorld/__pycache__/send_email.cpython-38.pyc
 /tableau-transfer/Data/*
 .RData
 postgres-to-warehouse/Test.R
+sharepoint-to-staging/.ipynb_checkpoints/Get Drive & File ID-checkpoint.py
