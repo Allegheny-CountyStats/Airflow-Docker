@@ -21,6 +21,7 @@ service <- Sys.getenv("SERVICE")
 table <- Sys.getenv("TABLE")
 dept <- Sys.getenv("DEPT")
 update_col <- Sys.getenv("UPDATE_COL")
+int_col <- Sys.getenv("INT_COL")
 
 table_name <- paste0("GIS.", dept, "_GISOnline_", table)
 
@@ -58,8 +59,16 @@ temp <- read_sf(RETRY("GET", url_2)) %>%
 while (nrow(temp) %% offset_orig == 0) {
   url_2 <- paste0(service, "query?where=", where, "&outFields=*&returnGeometry=true&featureEncoding=esriDefault&multipatchOption=xyFootprint&resultOffset=", offset, "&resultRecordCount=2000&f=pgeojson&token=", token)
   
-  temp <- read_sf(RETRY("GET", url_2)) %>%
-    mutate_at(vars(contains("date")), function(x) {as.POSIXct(as.numeric(x) / 1000, origin = "1970-01-01")}) %>%
+  temp2 <- read_sf(RETRY("GET", url_2)) %>%
+    mutate_at(vars(contains("date")), function(x) {as.POSIXct(as.numeric(x) / 1000, origin = "1970-01-01")}) 
+  
+  # Mutate Int
+  if (int_col != "") {
+    temp2 <- temp2 %>% 
+      mutate_at(vars(int_col), function(x) { as.integer(x)})
+  }
+  
+  temp <- temp2 %>%
     bind_rows(temp)
   
   offset <- offset + offset_orig
