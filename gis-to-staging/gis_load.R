@@ -76,8 +76,10 @@ while (nrow(temp) %% offset_orig == 0) {
 
 # Make SQL Server friendly table
 final <- temp %>%
+  mutate(geometry = st_as_text(geometry))%>%
   mutate(geometry_wkt = format(geometry)) %>%
   st_drop_geometry()
+
 
 # Load to Warehouse
 load_table <- paste0("Staging.", dept, "_GISOnline_", table)
