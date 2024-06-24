@@ -28,7 +28,7 @@ pull_FileOnNetwork = DockerOperator(
             'WH_PASS': wh_connection.password,
             'SHEET': 'SOME SHEET NAME',
             'WORKBOOK': 'SomeExcelWorkbook.xlsx',
-            'FILEPATH': './SomeFilePath', # File path within mounted drive to directory
+            'FILEPATH': './SOME_TARGET_DIRECTORY_IN_CONTAINER', # File path within mounted drive to directory, match path specified in target in below mount
             'COLTYPES': "date,numeric,date,numeric,text,text,text,text,text" # Comma Seperated List
         },
         docker_url='unix://var/run/docker.sock',
@@ -42,7 +42,7 @@ pull_FileOnNetwork = DockerOperator(
             ),
             Mount(
                 source='/media/SOME_FOLDER_NAME',
-                target='/SOME_TARGET_DIRECTORY_IN_CONTAINER',
+                target='/SOME_TARGET_DIRECTORY_IN_CONTAINER', # Matches FILEPATH
                 type='bind'
             )
         ]
