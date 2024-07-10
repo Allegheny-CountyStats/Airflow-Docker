@@ -53,7 +53,7 @@ offset <- offset_orig
 url_2 <- paste0(service, "query?where=", where, "&outFields=*&returnGeometry=true&featureEncoding=esriDefault&multipatchOption=xyFootprint&resultRecordCount=", offset, "&f=pgeojson&token=", token)
 
 temp <- read_sf(RETRY("GET", url_2)) %>%
-  mutate_at(vars(contains("date")), function(x) {as.POSIXct(as.numeric(x) / 1000, origin = "1970-01-01")})
+  mutate(across(contains("date") & where(is.numeric), ~as.POSIXct(as.numeric(.) / 1000, origin = "1970-01-01")))
 
 # Load more Pages
 while (nrow(temp) %% offset_orig == 0) {
