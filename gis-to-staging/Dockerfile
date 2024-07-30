@@ -1,4 +1,4 @@
-from countystats/r-geo:4.2
+from countystats/r-geo:4.3
 
 MAINTAINER Geoffrey Arnold "geoffrey.arnold@alleghenycounty.us"
 
