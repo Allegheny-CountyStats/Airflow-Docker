@@ -90,7 +90,7 @@ final <- temp %>%
 
 
 # Load to Warehouse
-load_table <- paste0("Staging.", dept, "_PennDotGIS_", table)
+load_table <- paste0("Staging.", dept, "_PennDOT_", table)
 dbWriteTable(wh_con, SQL(load_table), final, overwrite = TRUE, field.type = list("geometry_wkt" = "varchar(max)"))
 
 dbDisconnect(wh_con)
