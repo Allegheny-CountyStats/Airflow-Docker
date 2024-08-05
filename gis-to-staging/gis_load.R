@@ -53,7 +53,8 @@ offset <- offset_orig
 url_2 <- paste0(service, "query?where=", where, "&outFields=*&returnGeometry=true&featureEncoding=esriDefault&multipatchOption=xyFootprint&resultRecordCount=", offset, "&f=pgeojson&token=", token)
 
 temp <- read_sf(RETRY("GET", url_2)) %>%
-  mutate_at(vars(contains("date")), function(x) {as.POSIXct(as.numeric(x) / 1000, origin = "1970-01-01")})
+  mutate(across(contains("date") & where(is.numeric) | contains("date") & where(~sum(!is.na(.)) < 1), 
+                ~as.POSIXct(as.numeric(.) / 1000, origin = "1970-01-01")))
 
 # Load more Pages
 while (nrow(temp) %% offset_orig == 0) {
@@ -76,8 +77,10 @@ while (nrow(temp) %% offset_orig == 0) {
 
 # Make SQL Server friendly table
 final <- temp %>%
+  mutate(geometry = st_as_text(geometry))%>%
   mutate(geometry_wkt = format(geometry)) %>%
   st_drop_geometry()
+
 
 # Load to Warehouse
 load_table <- paste0("Staging.", dept, "_GISOnline_", table)
