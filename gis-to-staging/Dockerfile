@@ -6,5 +6,6 @@ RUN install2.r --error \
     dplyr
 
 ADD gis_load.R /
+ADD gis_penndot.R /
 
 CMD [ "Rscript", "gis_load.R" ]
