@@ -23,6 +23,7 @@ table <- Sys.getenv("TABLE")
 dept <- Sys.getenv("DEPT")
 update_col <- Sys.getenv("UPDATE_COL")
 int_col <- Sys.getenv("INT_COL")
+int_col <- unlist(strsplit(int_col, ","))
 where_state <- Sys.getenv("WHERE_STATE")
 pretext <- Sys.getenv("PRETEXT","query?timeRelation=esriTimeRelationOverlaps&geometryType=esriGeometryEnvelope&spatialRel=esriSpatialRelIntersects&units=esriSRUnit_Foot&relationParam=&outFields=*&returnGeometry=true&returnTrueCurves=false&returnIdsOnly=false&returnCountOnly=false&returnZ=false&returnM=false&returnDistinctValues=false&returnExtentOnly=false&sqlFormat=none&featureEncoding=esriDefault&f=geojson&where=")
 
@@ -56,22 +57,22 @@ if (where_state != ""){
 }
 
 # Get First Page
-url_2 <- paste0(service, pretext, where,"&resultRecordCount=",offset)
+url_2 <- paste0(service, pretext, where,"&resultRecordCount=",offset_orig)
 temp <- read_sf(RETRY("GET", url_2)) %>%
   mutate(across(contains("date") & where(is.numeric) | contains("date") & where(~sum(!is.na(.)) < 1), 
                 ~as.POSIXct(as.numeric(.) / 1000, origin = "1970-01-01")))
 
 # Load more Pages
-while (nrow(temp) %% offset_orig == 0) {
+while ((nrow(temp) %% offset_orig) == 0) {
   print(paste(offset, "through next offset"))
-  url_2 <- paste0(service, pretext, where, "&resultOffset=", offset, "&resultRecordCount=2000")
+  url_2 <- paste0(service, pretext, where, "&resultOffset=", offset, "&resultRecordCount=",offset_orig)
   
   temp2 <- read_sf(RETRY("GET", url_2)) %>%
     mutate(across(contains("date") & where(is.numeric) | contains("date") & where(~sum(!is.na(.)) < 1), 
                   ~as.POSIXct(as.numeric(.) / 1000, origin = "1970-01-01")))
   
   # Mutate Int
-  if (int_col != "") {
+  if (length(int_col)>0) {
     temp2 <- temp2 %>% 
       mutate_at(vars(int_col), function(x) { as.integer(x)})
   }
