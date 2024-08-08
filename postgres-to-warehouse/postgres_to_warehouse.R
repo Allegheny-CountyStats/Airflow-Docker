@@ -17,11 +17,7 @@ wh_host <- Sys.getenv('WH_HOST')
 wh_db <- Sys.getenv('WH_DB')
 wh_user <- Sys.getenv('WH_USER')
 wh_pass <- Sys.getenv('WH_PASS')
-Wh_cat <- Sys.getenv('WH_CAT', "DataWarehouse")
 wh_schema <- Sys.getenv('WH_SCHEMA', "Staging")
-
-sa_user <- Sys.getenv('SA_USER', wh_user)
-sa_pass <- Sys.getenv('SA_PASS', wh_pass)
 
 append_col <- Sys.getenv('APPEND_COL')
 append_type <- Sys.getenv('APPEND_TYPE', "MAX")
@@ -97,7 +93,7 @@ for (table in tables) {
     table <- gsub("^_", "", table)
   }
   
-  table_name <- DBI::Id(catalog = Wh_cat, schema = wh_schema, table = paste(dept, database, table, sep = "_"))
+  table_name <- DBI::Id(catalog = wh_db, schema = wh_schema, table = paste(dept, database, table, sep = "_"))
   
   if (max_cols_load == "") { 
     dbWriteTable(wh_con, table_name, temp, overwrite = TRUE)
