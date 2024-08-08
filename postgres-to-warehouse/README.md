@@ -17,7 +17,9 @@ Container used to import data from PostgreSQL to CountyStat warhoue
   * PG_PASS: Source Database password Connection value*
   * PG_HOST: Source Database host Connection value*
   * PG_DB: Source Database Connection value*
-  * PG_PORT: Source Databae Port value*
+  * PG_PORT: Source Database Port value*
+  * SCHEMA: Source Schema value
+    * Default value `dbo`
 * _Warehouse Connection Config_:
   * WH_HOST: Data Warehouse login Connection value*
   * WH_DB: Data Warehouse database Connection value*
