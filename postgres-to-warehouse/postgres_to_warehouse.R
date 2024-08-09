@@ -40,8 +40,7 @@ pg_con <- RPostgres::dbConnect(
   dbname = database,
   port = pg_port,
   user = pg_user,
-  password = pg_pass,
-  sslmode = 'require'
+  password = pg_pass
 )
 
 if (dev != ""){
@@ -63,15 +62,15 @@ if (dev != ""){
 
 tables <- unlist(strsplit(tables, ","))
 
-for (table in tables) {
+for (tablet in tables) {
   # Import SQL
   if (sql != '') {
     query <- sql
   } else {
-    query <- paste0("SELECT * FROM ", database, ".", schema, ".", table)
+    query <- paste0("SELECT * FROM ", database, ".", schema, ".", tablet)
   }
   
-  master_table <- paste0("Master.", paste(dept, database, table, sep = "_"))
+  master_table <- paste0("Master.", paste(dept, database, tablet, sep = "_"))
   
   # Append Value and Query
   if (append_col != '' && dbExistsTable(wh_con, SQL(master_table))) { 
@@ -85,15 +84,16 @@ for (table in tables) {
   }
   
   # Grab Data
-  temp <- dbGetQuery(pg_con, query)
-  print(paste(table, "read"))
-  dbDisconnect(pg_con)
+  temp <- DBI::dbGetQuery(pg_con, query)
+  print(paste(tablet, "read"))
   
-  if(grepl("^_", table)){
-    table <- gsub("^_", "", table)
+  if(grepl("^_", tablet)){
+    table_nx <- gsub("^_", "", tablet)
+  } else {
+    table_nx <- tablet
   }
   
-  table_name <- DBI::Id(catalog = wh_db, schema = wh_schema, table = paste(dept, database, table, sep = "_"))
+  table_name <- DBI::Id(catalog = wh_db, schema = wh_schema, table = paste(dept, database, table_nx, sep = "_"))
   
   if (max_cols_load == "") { 
     dbWriteTable(wh_con, table_name, temp, overwrite = TRUE)
@@ -117,11 +117,10 @@ for (table in tables) {
       dbWriteTable(wh_con, table_name, temp, overwrite = TRUE)
     }
   }
-  print(paste(table, "written"))
-  gc()
+  print(paste(tablet, "written"))
 }
 
-dbDisconnect(con)
+dbDisconnect(pg_con)
 dbDisconnect(wh_con)
 
 
