@@ -41,3 +41,9 @@ COPY requirements.txt ./
 
 RUN pip3 install --upgrade pip && \
     pip3 install --no-cache-dir -r requirements.txt
+
+COPY Allegheny-ENTCRT01-CA.crt /usr/local/share/ca-certificates/
+RUN chmod 644 /usr/local/share/ca-certificates/Allegheny-ENTCRT01-CA.crt && update-ca-certificates
+
+ENV REQUESTS_CA_BUNDLE='/etc/ssl/certs/ca-certificates.crt'
+ENV SSL_CERT_FILE='/etc/ssl/certs/ca-certificates.crt'
