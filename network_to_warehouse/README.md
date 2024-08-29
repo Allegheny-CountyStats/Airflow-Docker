@@ -51,3 +51,17 @@ pull_FileOnNetwork = DockerOperator(
 
 ### Current Templates:
 * [excel_to_staging.R](excel_to_staging.R): Transforms an Excel sheet into a table within the Staging schema of CountyStat Warehouse
+* [warehouse_to_network.R](warehouse_to_network.R): Exports warehouse table to network drive
+  * Parameters, **BOLD ARE REQUIRED**:
+    * **WH_HOST** = Source database host
+    * **WH_DB** = Source database
+    * **WH_USER** = Source database username
+    * **WH_PASS** = Source database password
+    * **DEPT** = Department label from database table name
+    * **TABLE** = Table from source database to export
+    * SCHEMA = Table's schema within source database (DEFAULT: Master)
+    * **FILEPATH** = Folder path to destination drive/subfolder (R-readable filepath)
+    * **FILENAME** = Filename for exported file within destination drive/folder (FILEPATH)
+    * FILEEXT = Desired file extension for export, either 'csv' or 'excel' (DEFAULT: csv)
+    * SHEETNAME = Desired sheet name within exported excel sheet (DEFAULT: Sheet1)
+    * OVERWRITE = Have export overwrite files in destination drive/folder, either "TRUE" or "FALSE" with quotation marks (DEFAULT: "TRUE")
