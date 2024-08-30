@@ -41,6 +41,9 @@ wh_con <- dbConnect(odbc::odbc(), driver = "{ODBC Driver 17 for SQL Server}", se
 
 table_name <- paste(schema, table, sep = ".")
 warehouse_export <- dbReadTable(wh_con, SQL(table_name))
+if (is.na(filename)){
+  filename <- table_name
+}
 
 if (fileext == "excel"){
   wb_final <- buildWorkbook(warehouse_export)
