@@ -71,6 +71,8 @@ schema = schema_device = DockerOperator(
 ### Iteration example
 
 ```python
+from airflow.decorators import task_group
+
 def clean_list(oldlist):
       cleaned = oldlist.__str__().replace("[", "").replace("'", "").replace("]", "").replace(" ", "")
       return cleaned
