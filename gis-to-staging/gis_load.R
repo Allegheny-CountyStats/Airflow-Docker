@@ -5,7 +5,7 @@ require(dplyr)
 require(lubridate)
 require(DBI)
 
-# dotenv::load_dot_env()
+# dotenv::load_dot_env("./gis-to-staging/.env")
 
 # Load Warehouse Credentials
 wh_host <- Sys.getenv('WH_HOST')
@@ -21,7 +21,10 @@ service <- Sys.getenv("SERVICE")
 table <- Sys.getenv("TABLE")
 dept <- Sys.getenv("DEPT")
 update_col <- Sys.getenv("UPDATE_COL")
-int_col <- Sys.getenv("INT_COL")
+int_col_list <- Sys.getenv("INT_COL", NA)
+if(!is.na(int_col_list)){
+  int_col <- unlist(as.list(strsplit(int_col_list, ",")))
+  }
 
 table_name <- paste0("GIS.", dept, "_GISOnline_", table)
 
@@ -56,6 +59,11 @@ temp <- read_sf(RETRY("GET", url_2)) %>%
   mutate(across(contains("date") & where(is.numeric) | contains("date") & where(~sum(!is.na(.)) < 1), 
                 ~as.POSIXct(as.numeric(.) / 1000, origin = "1970-01-01")))
 
+if (!is.na(int_col_list)) {
+  temp <- temp %>% 
+    mutate_at(vars(int_col), function(x) { as.integer(x)})
+}
+
 # Load more Pages
 while (nrow(temp) %% offset_orig == 0) {
   url_2 <- paste0(service, "query?where=", where, "&outFields=*&returnGeometry=true&featureEncoding=esriDefault&multipatchOption=xyFootprint&resultOffset=", offset, "&resultRecordCount=2000&f=pgeojson&token=", token)
@@ -65,7 +73,7 @@ while (nrow(temp) %% offset_orig == 0) {
                   ~as.POSIXct(as.numeric(.) / 1000, origin = "1970-01-01")))
   
   # Mutate Int
-  if (int_col != "") {
+  if (!is.na(int_col_list)) {
     temp2 <- temp2 %>% 
       mutate_at(vars(int_col), function(x) { as.integer(x)})
   }
