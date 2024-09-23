@@ -24,7 +24,12 @@ update_col <- Sys.getenv("UPDATE_COL")
 int_col_list <- Sys.getenv("INT_COL", NA)
 if(!is.na(int_col_list)){
   int_col <- unlist(as.list(strsplit(int_col_list, ",")))
-  }
+}
+
+float_col_list <- Sys.getenv("FLOAT_COL", NA)
+if(!is.na(float_col_list)){
+  float_col <- unlist(as.list(strsplit(float_col_list, ",")))
+}
 
 table_name <- paste0("GIS.", dept, "_GISOnline_", table)
 
@@ -61,7 +66,12 @@ temp <- read_sf(RETRY("GET", url_2)) %>%
 
 if (!is.na(int_col_list)) {
   temp <- temp %>% 
-    mutate_at(vars(int_col), function(x) { as.integer(x)})
+    mutate_at(any_of(int_col), function(x) { as.integer(x)})
+}
+
+if (!is.na(float_col_list)) {
+  temp <- temp %>% 
+    mutate_at(any_of(float_col), function(x) { as.numeric(x)})
 }
 
 # Load more Pages
