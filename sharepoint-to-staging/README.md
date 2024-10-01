@@ -51,3 +51,43 @@ pull_motions = DockerOperator(
                 network_mode="bridge"
         )
 ```
+
+# sharepoint_upload (excel file)
+
+Template to load file from docker container to a sharepoint site folder.
+
+Same image name, but needs the following command within the docker operator:
+`command= 'python3 sharepoint_upload.py'`
+
+## Environmental Variables:
+* client_id: Microsoft Graph API Airflow Variable*
+* client_secret: Microsoft Graph API Airflow Variable*
+* drive_id: ID of the user or Sharepoint groups Drive. Use `Get Drive & File ID.ipynb` to get ID.*
+* filename: name of file to upload*
+* folder_name: name of target sharepoint folder, defaults to `None` which lands the file in the root documents folder.
+
+(*) Required variable
+
+## Dag Example
+
+```
+wh_connection = BaseHook.get_connection("data_warehouse")
+dept = 'Example_Dept'
+...
+upload_motions = DockerOperator(
+                task_id='upload_motions',
+                image='countystats/sharepoint-to-staging:python',
+                api_version='1.39',
+                auto_remove=True,
+                environment={
+                    'client_id': Variable.get("o365_client_id"),
+                    'client_secret':  Variable.get("o365_client_secret"),
+                    'drive_id': 'some_id_from_notebook',
+                    'filename': 'some_filename_or_filepath_in_container',
+                    'folder_name': 'some_folder_name'
+                },
+                docker_url='unix://var/run/docker.sock',
+                network_mode="bridge",
+                command= 'python3 sharepoint_upload.py'
+        )
+```
