@@ -54,9 +54,11 @@ pull_motions = DockerOperator(
 
 # sharepoint_upload (excel file)
 
-Template to load file from docker container to a sharepoint site folder.
+Template to load file from K: into a sharepoint site folder.
 
-Same image name, but needs the following command within the docker operator:
+Image Name: `countystats/sharepoint-to-staging:1.0`
+
+Needs the following command within the docker operator:
 `command= 'python3 sharepoint_upload.py'`
 
 ## Environmental Variables:
@@ -71,23 +73,28 @@ Same image name, but needs the following command within the docker operator:
 ## Dag Example
 
 ```
-wh_connection = BaseHook.get_connection("data_warehouse")
-dept = 'Example_Dept'
 ...
 upload_motions = DockerOperator(
                 task_id='upload_motions',
-                image='countystats/sharepoint-to-staging:python',
+                image='countystats/sharepoint-to-staging:1.0',
                 api_version='1.39',
                 auto_remove=True,
                 environment={
                     'client_id': Variable.get("o365_client_id"),
                     'client_secret':  Variable.get("o365_client_secret"),
                     'drive_id': 'some_id_from_notebook',
-                    'filename': 'some_filename_or_filepath_in_container',
+                    'filename': 'some_filename_or_filepath_starting_with /CountyExec',
                     'folder_name': 'some_folder_name'
                 },
                 docker_url='unix://var/run/docker.sock',
                 network_mode="bridge",
-                command= 'python3 sharepoint_upload.py'
+                command= 'python3 sharepoint_upload.py',
+                mounts=[
+                        Mount(
+                                source='/media/CountyExecutive',
+                                target='/CountyExec',
+                                type='bind'
+                            )
+                ]
         )
 ```
