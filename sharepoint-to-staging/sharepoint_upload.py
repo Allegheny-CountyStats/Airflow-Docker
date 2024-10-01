@@ -16,8 +16,9 @@ from datetime import date, timedelta, datetime
 
 client_id = os.getenv("client_id")
 client_secret = os.getenv("client_secret")
-sp_folder_name = os.getenv("folder_name", None)
+sp_folder_name = os.getenv("target_folder_name", None)
 filename = os.getenv("filename")
+mount_path = os.getenv("source_folder_name", "/CountyExec")
 drive = os.getenv("drive_id")
 
 # Create Auth object
@@ -52,7 +53,7 @@ else:
     folder_id = children[children['name'] == sp_folder_name].iloc[0]['id']
     put_url = "https://graph.microsoft.com/v1.0/sites/{}/drive/{}:/{}:/content".format(drive, folder_id, filename)
 upload_headers = headers = {'authorization': bearer, 'Content-Type': 'application/json'}
-upload = requests.request("PUT", put_url, data=open(filename, 'rb'), headers=headers)
+upload = requests.request("PUT", put_url, data=open(f"{mount_path}{filename}", 'rb'), headers=headers)
 try:
     upload.raise_for_status()
 except requests.exceptions.HTTPError as err:
