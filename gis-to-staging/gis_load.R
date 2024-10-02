@@ -14,7 +14,10 @@ wh_user <- Sys.getenv('WH_USER')
 wh_pass <- Sys.getenv('WH_PASS')
 
 # Connect to Warehouse
-wh_con <- dbConnect(odbc::odbc(), driver = "{ODBC Driver 17 for SQL Server}", server = wh_host, database = wh_db, UID = wh_user, pwd = wh_pass)
+wh_con <- dbConnect(odbc::odbc(), driver = "{ODBC Driver 17 for SQL Server}", server = wh_host, database = wh_db, 
+                    UID = wh_user, pwd = wh_pass
+                    # , Trusted_Connection="YES"
+                    )
 
 # Pull Table Variables
 service <- Sys.getenv("SERVICE")
@@ -31,9 +34,9 @@ if(!is.na(float_col_list)){
   float_col <- unlist(as.list(strsplit(float_col_list, ",")))
 }
 
-table_name <- paste0("GIS.", dept, "_GISOnline_", table)
+table_name <- Id(schema="GIS", table=paste0(dept, "_GISOnline_", table))
 
-if (!dbExistsTable(wh_con, SQL(table_name))) {
+if (!dbExistsTable(wh_con, table_name)) {
   where <- "1%3D1"
 } else if (update_col != "") {
   query <- paste0("SELECT MAX(", update_col, ") max FROM ", table_name)
@@ -66,12 +69,12 @@ temp <- read_sf(RETRY("GET", url_2)) %>%
 
 if (!is.na(int_col_list)) {
   temp <- temp %>% 
-    mutate_at(any_of(int_col), function(x) { as.integer(x)})
+    mutate(across(any_of(int_col), function(x) { as.integer(x)}))
 }
 
 if (!is.na(float_col_list)) {
   temp <- temp %>% 
-    mutate_at(any_of(float_col), function(x) { as.numeric(x)})
+    mutate(across(any_of(float_col), function(x) { as.integer(x)}))
 }
 
 # Load more Pages
@@ -85,7 +88,12 @@ while (nrow(temp) %% offset_orig == 0) {
   # Mutate Int
   if (!is.na(int_col_list)) {
     temp2 <- temp2 %>% 
-      mutate_at(vars(int_col), function(x) { as.integer(x)})
+      mutate(across(any_of(int_col), function(x) { as.integer(x)}))
+  }
+  
+  if (!is.na(float_col_list)) {
+    temp2 <- temp2 %>% 
+      mutate(across(any_of(float_col), function(x) { as.integer(x)}))
   }
   
   temp <- temp2 %>%
