@@ -35,11 +35,12 @@ if(!is.na(float_col_list)){
 }
 
 table_name <- Id(schema="GIS", table=paste0(dept, "_GISOnline_", table))
+table_name_text <- paste0("GIS.",dept,'_GISOnline_',table)
 
 if (!dbExistsTable(wh_con, table_name)) {
   where <- "1%3D1"
 } else if (update_col != "") {
-  query <- paste0("SELECT MAX(", update_col, ") max FROM ", table_name)
+  query <- paste0("SELECT MAX(", update_col, ") max FROM ", table_name_text)
   max <- as.Date(dbGetQuery(wh_con, query)$max)
   where <- URLencode(paste0(update_col, " > '", max, "'"))
 } else {
