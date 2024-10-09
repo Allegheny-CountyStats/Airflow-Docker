@@ -52,7 +52,7 @@ if sp_folder_name is None or children.empty:
     put_url = "https://graph.microsoft.com/v1.0/sites/{}/drive/root:/{}:/content".format(drive, dest_filename)
 else:
     folder_id = children[children['name'] == sp_folder_name].iloc[0]['id']
-    put_url = "https://graph.microsoft.com/v1.0/sites/{}/drive/{}:/{}:/content".format(drive, folder_id, dest_filename)
+    put_url = "https://graph.microsoft.com/v1.0/sites/{}/drive/items/{}:/{}:/content".format(drive, folder_id, dest_filename)
 upload_headers = headers = {'authorization': bearer, 'Content-Type': 'application/json'}
 upload = requests.request("PUT", put_url, data=open(f"{mount_path}{filename}", 'rb'), headers=headers)
 try:
