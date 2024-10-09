@@ -18,6 +18,7 @@ client_id = os.getenv("client_id")
 client_secret = os.getenv("client_secret")
 sp_folder_name = os.getenv("target_folder_name", None)
 filename = os.getenv("filename")
+dest_filename = os.getenv("dest_filename", filename)
 mount_path = os.getenv("source_folder_name", "/CountyExec")
 drive = os.getenv("drive_id")
 
@@ -48,10 +49,10 @@ children = pd.DataFrame.from_dict(items_r.json()['value'])
 if sp_folder_name is None or children.empty:
     if children.empty:
         print("No subfolders present: defaulting to Doucments root folder")
-    put_url = "https://graph.microsoft.com/v1.0/sites/{}/drive/root:/{}:/content".format(drive, filename)
+    put_url = "https://graph.microsoft.com/v1.0/sites/{}/drive/root:/{}:/content".format(drive, dest_filename)
 else:
     folder_id = children[children['name'] == sp_folder_name].iloc[0]['id']
-    put_url = "https://graph.microsoft.com/v1.0/sites/{}/drive/{}:/{}:/content".format(drive, folder_id, filename)
+    put_url = "https://graph.microsoft.com/v1.0/sites/{}/drive/{}:/{}:/content".format(drive, folder_id, dest_filename)
 upload_headers = headers = {'authorization': bearer, 'Content-Type': 'application/json'}
 upload = requests.request("PUT", put_url, data=open(f"{mount_path}{filename}", 'rb'), headers=headers)
 try:
