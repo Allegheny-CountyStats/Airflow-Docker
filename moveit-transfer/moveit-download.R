@@ -22,6 +22,7 @@ max_cols <- unlist(strsplit(Sys.getenv("MAX_COLS"), ","))
 filename <- Sys.getenv("FILENAME")
 file_id <- Sys.getenv("FILE_ID")
 snakecase <- Sys.getenv("SNAKECASE", unset = "FALSE")
+sheet_name <- Sys.getenv("SHEET")
 
 file_type <- tolower(tools::file_ext(filename))
 
@@ -59,7 +60,11 @@ if (file_id == "" & filename != "") {
 file_type <- ifelse(file_type %in% c("xlsx", "xls"), "excel", file_type)
 
 # Download File
-temp <- readMoveItFile(moveit_url, tokens, file_id, file_type, sheet_download="rpt_StandardRawDataExport")
+if (sheet_name != ""){
+  temp <- readMoveItFile(moveit_url, tokens, file_id, file_type, sheet_download=sheet_name)
+}else{
+  temp <- readMoveItFile(moveit_url, tokens, file_id, file_type)
+}
 
 if (nrow(temp) > 0 ) {
   temp <- temp %>%
