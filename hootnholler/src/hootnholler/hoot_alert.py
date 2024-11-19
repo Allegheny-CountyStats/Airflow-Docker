@@ -1,29 +1,28 @@
-from airflow.hooks.base import BaseHook
-from airflow.providers.slack.operators.slack_webhook import SlackWebhookOperator
-
-# Slack Alerts
-SLACK_CONN_ID = 'slack'
+import requests
+from requests.models import PreparedRequest
 
 
-def task_fail_slack_alert(context):
-    slack_webhook_token = BaseHook.get_connection(SLACK_CONN_ID).password
-    slack_msg = """
-            :red_circle: Task Failed. 
-            *Task*: {task}  
-            *Dag*: {dag} 
-            *Execution Time*: {exec_date}  
-            *Log Url*: {log_url} 
-            """.format(
-        task=context.get('task_instance').task_id,
-        dag=context.get('task_instance').dag_id,
-        ti=context.get('task_instance'),
-        exec_date=context.get('execution_date'),
-        log_url=context.get('task_instance').log_url,
-    )
-    failed_alert = SlackWebhookOperator(
-        task_id='slack_alert',
-        http_conn_id=SLACK_CONN_ID,
-        webhook_token=slack_webhook_token,
-        message=slack_msg,
-        username='Airflow')
-    return failed_alert.execute(context=context)
+def hoot_update(state='happy', sentry=None, ddw_bearer=None, ddw_user_message='', ddw_history_note='',
+                cookie_setting=''):
+    url = "https://data.world/h/api/v1/sentries/{}?".format(sentry)
+
+    if sentry is None:
+        raise TypeError('No Sentry Supplied for Hoot Alert/Update')
+
+    if ddw_bearer is None:
+        raise TypeError('No Bearer Token Supplied for Data.World API Call')
+
+    payload = {}
+    params = {'state': state, 'user_message': ddw_user_message, 'history_note': ddw_history_note, 'private_entry': 'True'}
+    req = PreparedRequest()
+    req.prepare_url(url, params)
+    headers = {
+        'Authorization': ddw_bearer,
+        'Cookie': cookie_setting
+    }
+
+    response = requests.request("POST", req.url, headers=headers, data=payload)
+    try:
+        response.raise_for_status()
+    except requests.exceptions.HTTPError as e:
+        return "Error: " + str(e)

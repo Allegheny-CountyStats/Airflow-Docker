@@ -1,19 +1,9 @@
 from airflow.hooks.base import BaseHook
 from airflow.providers.slack.operators.slack_webhook import SlackWebhookOperator
 
-# Slack Alerts
-SLACK_CONN_ID = 'slack'
-
-
-def task_fail_slack_alert(context):
-    slack_webhook_token = BaseHook.get_connection(SLACK_CONN_ID).password
-    slack_msg = """
-            :red_circle: Task Failed. 
-            *Task*: {task}  
-            *Dag*: {dag} 
-            *Execution Time*: {exec_date}  
-            *Log Url*: {log_url} 
-            """.format(
+def task_fail_slack_alert(context, slack_conn_id, slack_message=default_message):
+    slack_webhook_token = BaseHook.get_connection(slack_conn_id).password
+    slack_msg = slack_message.format(
         task=context.get('task_instance').task_id,
         dag=context.get('task_instance').dag_id,
         ti=context.get('task_instance'),
@@ -22,7 +12,7 @@ def task_fail_slack_alert(context):
     )
     failed_alert = SlackWebhookOperator(
         task_id='slack_alert',
-        http_conn_id=SLACK_CONN_ID,
+        http_conn_id=slack_conn_id,
         webhook_token=slack_webhook_token,
         message=slack_msg,
         username='Airflow')
