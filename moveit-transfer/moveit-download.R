@@ -59,7 +59,7 @@ if (file_id == "" & filename != "") {
 file_type <- ifelse(file_type %in% c("xlsx", "xls"), "excel", file_type)
 
 # Download File
-temp <- readMoveItFile(moveit_url, tokens, file_id, file_type)
+temp <- readMoveItFile(moveit_url, tokens, file_id, file_type, sheet_download="rpt_StandardRawDataExport")
 
 if (nrow(temp) > 0 ) {
   temp <- temp %>%
