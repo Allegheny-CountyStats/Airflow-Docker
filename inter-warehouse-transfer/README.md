@@ -1,7 +1,7 @@
 # Inter Warehouse Transfer
 This script will take a table from the DataWarehouse or any other version and transfer it to one of the other databases.
 
-Image Name: `countystats/warehouse-geocode:r`
+Image Name: `countystats/inter-warehouse-transfer:r`
 
 ## Enviornmental Variables:
 * DEPT: Department Name*
