@@ -25,6 +25,7 @@ Note that many of the default environmental variables are only applicable for in
 *	moveit-transfer: Transfer Data to and from the DataWarehouse and the MoveIt Server
 *	moveit-transfer-geo: Transfer Geographic data to and from the Data Warehouse and the MoveIt Server.
 *	mssql-to-staging: Transfer Data from MSSQL to the Data Warehouse for schema verification
+*	render-quarto: Base image to render a quarto Site or PDF document from
 *	oracle-to-staging: Transfer Data from Oracle to the Data Warehouse for schema verfication
 *	sharepoint-to-staging: Transfer Data from Sharepoint/Office365/OneDrive to the Data Warehouse for schema verification.
 *	socrata-to-staging: Transfer Data using the Socrata API to the Data Warehouse for schema verification.
