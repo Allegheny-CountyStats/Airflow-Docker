@@ -3,7 +3,7 @@ from requests.models import PreparedRequest
 
 
 def hoot_update(state='happy', sentry=None, ddw_bearer=None, ddw_user_message='', ddw_history_note='',
-                cookie_setting=''):
+                cookie_setting='', ssl_path='/etc/ssl/certs/ca-certificates.crt'):
     url = "https://data.world/h/api/v1/sentries/{}?".format(sentry)
 
     if sentry is None:
@@ -21,7 +21,7 @@ def hoot_update(state='happy', sentry=None, ddw_bearer=None, ddw_user_message=''
         'Cookie': cookie_setting
     }
 
-    response = requests.request("POST", req.url, headers=headers, data=payload)
+    response = requests.request("POST", req.url, headers=headers, data=payload, verify=ssl_path)
     try:
         response.raise_for_status()
     except requests.exceptions.HTTPError as e:

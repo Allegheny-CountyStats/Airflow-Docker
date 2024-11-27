@@ -19,3 +19,15 @@ Package installed at dev within /home/mgradmin/.local/lib/python3.10/site-packag
         'on_failure_callback': callback_fail,
         'max_active_runs': 1
     }
+
+
+Edited the profile to add ssl variables for python requests:
+```
+nano ~/.profile
+#add lines to file
+export REQUESTS_CA_BUNDLE=/etc/ssl/certs/ca-certificates.crt
+export SSL_CERT_FILE=/etc/ssl/certs/ca-certificates.crt
+# write out lines
+# exit nano editor
+source ~/.profile
+```
