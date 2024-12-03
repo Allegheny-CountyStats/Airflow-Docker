@@ -11,8 +11,6 @@ dept <- Sys.getenv("DEPT")
 tables <- Sys.getenv('TABLES')
 schema <- Sys.getenv('SCHEMA', 'Reporting')
 schema_b <- Sys.getenv('SCHEMA_B', schema)
-append <- Sys.getenv('APPEND', 'FALSE')
-append <- append == "TRUE"
 
 max_cols_load <- Sys.getenv("MAX_COLS")
 max_cols <- unlist(strsplit(max_cols_load, ","))
@@ -34,7 +32,7 @@ whb_con <- dbConnect(odbc::odbc(), driver = "{ODBC Driver 17 for SQL Server}", s
 # Get list of Tables
 tables <- unlist(strsplit(tables, ","))
 
-# Transfer each Table from CJ (Criminal Justice Data Warehouse) to Dave (Data Warehouse Prime)
+# Transfer each Table from Warehouse A to Warehouse B
 for (table in tables) {
   table_name <- paste(schema, paste(dept, source, table, sep = "_"), sep = ".")
   new_table <- paste(schema_b, paste(dept, source, table, sep = "_"), sep = ".")
