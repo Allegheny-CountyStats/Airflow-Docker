@@ -5,7 +5,7 @@ require(dplyr)
 require(lubridate)
 require(DBI)
 
-# dotenv::load_dot_env("./.env")
+# dotenv::load_dot_env("./gis-to-staging/.env")
 
 # Load Warehouse Credentials
 wh_host <- Sys.getenv('WH_HOST')
@@ -15,7 +15,9 @@ wh_pass <- Sys.getenv('WH_PASS')
 
 # Connect to Warehouse
 wh_con <- dbConnect(odbc::odbc(), driver = "{ODBC Driver 17 for SQL Server}", server = wh_host, 
-                    database = wh_db, UID = wh_user, pwd = wh_pass)
+                    database = wh_db, UID = wh_user, pwd = wh_pass
+                    # , Trusted_Connection = "YES"
+                    )
 
 # Pull Table Variables
 service <- Sys.getenv("SERVICE")
@@ -27,7 +29,9 @@ int_col <- unlist(strsplit(int_col, ","))
 where_state <- Sys.getenv("WHERE_STATE")
 pretext <- Sys.getenv("PRETEXT","query?timeRelation=esriTimeRelationOverlaps&geometryType=esriGeometryEnvelope&spatialRel=esriSpatialRelIntersects&units=esriSRUnit_Foot&relationParam=&outFields=*&returnGeometry=true&returnTrueCurves=false&returnIdsOnly=false&returnCountOnly=false&returnZ=false&returnM=false&returnDistinctValues=false&returnExtentOnly=false&sqlFormat=none&featureEncoding=esriDefault&f=geojson&where=")
 
-table_name <- paste0("GIS.", dept, "_GISOnline_", table)
+table_name<- paste0("Master.", dept, "_PennDOT_", table)
+date_cols <- Sys.getenv('DATE_COLUMN')
+date_cols <- unlist(strsplit(date_cols, ","))
 
 offset_orig <- as.numeric(Sys.getenv("OFFSET", 1000))
 offset <- offset_orig
@@ -88,6 +92,11 @@ final <- temp %>%
   mutate(geometry = st_as_text(geometry))%>%
   mutate(geometry_wkt = format(geometry)) %>%
   st_drop_geometry()
+if (any(date_cols %in% colnames(final))){
+  final <- final %>%
+    mutate(across(c(date_cols) & where(is.numeric), 
+                  ~as.POSIXct(as.numeric(.) / 1000, origin = "1970-01-01")))
+}
 
 
 # Load to Warehouse
