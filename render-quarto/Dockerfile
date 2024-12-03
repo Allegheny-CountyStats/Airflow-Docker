@@ -2,7 +2,6 @@ FROM countystats/r-geo:4.2
 
 MAINTAINER Geoffrey Arnold "geoffrey.arnold@alleghenycounty.us"
 
-
 RUN apt-get update && apt-get install -y --no-install-recommends \
     pandoc \
     pandoc-citeproc \
@@ -37,8 +36,8 @@ RUN install2.r --error \
     markdown \
     tidyverse
 
-COPY CountyStatKPI_1.0.1.tar.gz /
+COPY CountyStatKPI_1.0.3.tar.gz /
 
-RUN Rscript -e "install.packages('CountyStatKPI_1.0.1.tar.gz', repos = NULL, type = 'source')"
+RUN Rscript -e "install.packages('CountyStatKPI_1.0.3.tar.gz', repos = NULL, type = 'source')"
 
 COPY _extensions/ _extensions/
