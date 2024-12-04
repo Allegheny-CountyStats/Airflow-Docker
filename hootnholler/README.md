@@ -23,14 +23,13 @@ error_message = """
         """
 SLACK_CONN_ID = 'slack'
 
-def callback_fail(context):
+def callback_fail(context):  # Also includes slack_fail notification
     task_fail_slack_alert(slack_conn_id=SLACK_CONN_ID, slack_message=error_message, context=context)
     hoot_update(state='sad', sentry='SentryId', ddw_bearer=Variable.get("ddw_sa_token"),
                 cookie_setting=Variable.get("ddw_sentry_cookie"), ddw_history_note="Sent from testingHoot.py")
 
 
 def callback_success(context):
-    task_fail_slack_alert(slack_conn_id=SLACK_CONN_ID, slack_message=error_message, context=context)
     hoot_update(state='happy', sentry='SentryId', ddw_bearer=Variable.get("ddw_sa_token"),
                 cookie_setting=Variable.get("ddw_sentry_cookie"), ddw_history_note="Sent from testingHoot.py")
     
