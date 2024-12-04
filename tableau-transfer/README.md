@@ -3,6 +3,11 @@
 This script will take data from the Datawarehouse and upload it to the Tableau Server.
 
 Image Name: `countystats/tableau-transfer:python`
+Tags:
+* 1.0
+  * Contains Tableau-Transfer.py updated with hoots
+* python
+  * Regular use
 
 ## Enviornmental Variables:
 * dept: Schema and Department Name*
