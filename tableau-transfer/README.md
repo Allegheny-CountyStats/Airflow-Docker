@@ -8,11 +8,6 @@ Tags:
   * Contains Tableau-Transfer.py updated with hoots
 * python
   * Regular use
-* debug
-  * Jail_Data_Systems.py
-  * Air_Quality_Hourly.py
-  * Medical_Examiner_DrugChem.py
-  * Employee_Hours_Paid.py
 
 ## Enviornmental Variables:
 * dept: Schema and Department Name*
