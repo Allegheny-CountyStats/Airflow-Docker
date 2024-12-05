@@ -15,7 +15,7 @@ from airflow.models import Variable
 
 # Slack variables
 error_message = """
-        :white_circle: Hoot Test. 
+        :red_circle: Task Failed. 
         *Task*: {task}  
         *Dag*: {dag} 
         *Execution Time*: {exec_date}  
