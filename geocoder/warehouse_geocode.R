@@ -11,8 +11,9 @@ source("./alco_geocoder.R")
 source <- Sys.getenv("SOURCE")
 dept <- Sys.getenv("DEPT")
 table <- Sys.getenv('TABLE')
+schema <- Sys.getenv('SCHEMA', "Master")
 
-full_table <- paste0("Master.", dept, "_", source, "_", table)
+full_table <- paste0(schema, ".", dept, "_", source, "_", table)
 
 wh_host <- Sys.getenv('WH_HOST')
 wh_db <- Sys.getenv('WH_DB')
