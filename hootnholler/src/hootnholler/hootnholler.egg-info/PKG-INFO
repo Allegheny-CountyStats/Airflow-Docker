@@ -1,0 +1,21 @@
+Metadata-Version: 2.1
+Name: hootnholler
+Version: 0.0.1
+Summary: Package to run Airflow tasks for a Slack Alert and Hoot Update/Verfication
+Author: Daniel Andrus
+Author-email: <daniel.andrus@alleghenycounty.us>
+Keywords: python,first package
+Classifier: Development Status :: 2 - Pre-Alpha
+Classifier: Intended Audience :: Developers
+Classifier: Programming Language :: Python :: 3
+Classifier: Programming Language :: Python :: 3.8
+Classifier: Programming Language :: Python :: 3.10
+Classifier: Operating System :: Microsoft :: Windows
+Classifier: Framework :: Apache Airflow
+Classifier: Framework :: Apache Airflow :: Provider
+Classifier: License :: OSI Approved :: Apache Software License
+Classifier: Natural Language :: English
+Classifier: Topic :: Communications :: Chat
+Classifier: Topic :: Software Development :: Libraries :: Python Modules
+
+Package with functions that can be used on callback, as a python operator, or other utility within and Airflow DAG. Functions include a Slack-Alert for failed tasks and Hoot Status Alert/Update.

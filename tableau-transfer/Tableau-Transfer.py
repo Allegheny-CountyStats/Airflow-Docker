@@ -10,6 +10,8 @@ from tableauhyperapi import TableName
 import re
 import gc
 from sqlalchemy.engine import URL
+import requests
+from requests.models import PreparedRequest
 
 # Env Variables
 # Data Vars
@@ -32,6 +34,13 @@ server = os.getenv('server', 'tableau')
 # Load Tableau Credentials
 tableau_username = os.getenv("ts_username")
 tableau_password = os.getenv("ts_password")
+
+# Hoot Vars
+hoot_sentry = os.getenv("HOOT_SENTRY", None)
+hoot_token = os.getenv("HOOT_TOKEN")
+hoot_user_message = os.getenv("HOOT_USER_MESSAGE")
+hoot_history_note = os.getenv("HOOT_HISTORY_NOTE")
+hoot_cookie = os.getenv("HOOT_COOKIE")
 
 # Load Datawarehouse Credentials
 wh_host = os.getenv("wh_host")
@@ -154,3 +163,27 @@ print('Writing Hyperfile to Tableau Server.', file=sys.stderr)
 # publish data source (specified in file_path)
 with server.auth.sign_in(tableau_auth):
     server.datasources.publish(upload, r'temp.hyper', mode)
+
+# Hoot
+if hoot_sentry is not None:
+    url = "https://data.world/h/api/v1/sentries/{}?".format(hoot_sentry)
+    ssl_path = '/etc/ssl/certs/ca-certificates.crt'
+    if hoot_token is None:
+        raise TypeError('No Bearer Token Supplied for Data.World API Call')
+
+    payload = {}
+    params = {'state': 'happy', 'user_message': hoot_user_message, 'history_note': hoot_history_note,
+              'private_entry': 'True'}
+    req = PreparedRequest()
+    req.prepare_url(url, params)
+    headers = {
+        'Authorization': hoot_token,
+        'Cookie': hoot_cookie
+    }
+
+    response = requests.request("POST", req.url, headers=headers, data=payload, verify=ssl_path)
+    try:
+        response.raise_for_status()
+    except requests.exceptions.HTTPError as e:
+        "Error: " + str(e)
+
