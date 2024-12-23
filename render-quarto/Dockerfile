@@ -36,8 +36,8 @@ RUN install2.r --error \
     markdown \
     tidyverse
 
-COPY CountyStatKPI_1.0.3.tar.gz /
+COPY CountyStatKPI_1.0.4.tar.gz /
 
-RUN Rscript -e "install.packages('CountyStatKPI_1.0.3.tar.gz', repos = NULL, type = 'source')"
+RUN Rscript -e "install.packages('CountyStatKPI_1.0.4.tar.gz', repos = NULL, type = 'source')"
 
 COPY _extensions/ _extensions/
