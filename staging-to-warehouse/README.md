@@ -54,6 +54,7 @@ staging_to_warehouse = DockerOperator(
                     'TABLE': 'TableName' OR 'TABLES': 'Comma,Separated,Table,Names',
                     'REQ_TABLES': 'Tables, Names, Comma,Separated', # New rows required, must exist in TABLES variable
                     'ID_COL': 'id_col', #ID_COLS must have the same name if doing multiple tables
+                    'CALC_UID': 'NO', #Indicates whether ID_COLS is a calculated field: if so, excldues from insert statement, available in 'staging-to-warehouse:calc_col'
                     'SOURCE': connection.schema,
                     'WH_HOST': wh_connection.host,
                     'WH_DB': wh_connection.schema,
