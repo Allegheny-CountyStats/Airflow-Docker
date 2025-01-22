@@ -34,18 +34,18 @@ for (table in tables) {
   # Skip if No Table to Append with
   if(dbExistsTable(wh_con, DBI::Id(schema = "Master", table = table_name))) {
     # Delete rows
-    sql_insert <- paste0("
+    sql_delete <- paste0("
     DELETE m
     FROM ", new_table, " m
     INNER JOIN ", prel_table, " s ON m.", id_col," = s.", id_col, ";")
-    x <- dbExecute(wh_con, sql_insert)
+    x <- dbExecute(wh_con, sql_delete)
     print(paste0(x, " rows matched with ", prel_table," and then deleted from ", new_table))
     
     # Gather column names
     cols <- paste0("SELECT COLUMN_NAME
 FROM INFORMATION_SCHEMA.COLUMNS
 WHERE TABLE_NAME = '", table_name, "' AND TABLE_SCHEMA = 'Staging'")
-    col_list <- col_names <- dbGetQuery(wh_con, cols)$COLUMN_NAME 
+    col_names <- dbGetQuery(wh_con, cols)$COLUMN_NAME 
     if(calculated_uid == "YES"){
       cols <- paste0("SELECT COLUMN_NAME
 FROM INFORMATION_SCHEMA.COLUMNS
@@ -55,6 +55,8 @@ WHERE TABLE_NAME = '", table_name, "' AND TABLE_SCHEMA = 'Staging' AND COLUMN_NA
     }
     
     # Append to Master Table 
+    sql_insert <- paste0("WITH NewData AS (SELECT [", col_names, "] FROM ", prel_table, ")
+                        INSERT INTO ", new_table, " ([", col_names, "]) SELECT * FROM NewData;")
     y <- dbExecute(wh_con, sql_insert)
     
     if(y-x < 0){
