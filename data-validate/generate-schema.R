@@ -25,7 +25,7 @@ sql <- paste0("SELECT COLUMN_NAME, DATA_TYPE
 FROM ", wh_db, ".INFORMATION_SCHEMA.COLUMNS
 WHERE TABLE_NAME = '", paste(dept, source, table, sep = "_"), "' AND TABLE_SCHEMA = '", schema, "'")
 
-wh_con <- dbConnect(odbc::odbc(), driver = "{ODBC Driver 17 for SQL Server}", server = wh_host, database = wh_db, UID = wh_user, pwd = wh_pass, Trusted_Connection= "yes")
+wh_con <- dbConnect(odbc::odbc(), driver = "{ODBC Driver 17 for SQL Server}", server = wh_host, database = wh_db, Trusted_Connection= "yes")
 
 preload <- dbGetQuery(wh_con, sql) %>%
   mutate(NAs = case_when(COLUMN_NAME %in% na_list ~ FALSE,
