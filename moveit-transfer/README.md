@@ -4,7 +4,7 @@ Provide a tables in the Datawarehouse to transfer to the County's Move It SFTP s
 
 The command argument for this file is different defending on the action you are taking. For Uploads use: `Rscript moveit-transfer.R` for downloads use: `Rscript moveit-download.R`
 
-Image Name: `countystats/moveit-transfer:2.0` or `countystats/moveit-transfer:r`
+Image Name: `countystats/moveit-transfer:2.0` or `countystats/moveit-transfer:r` or `countystats/moveit-transfer:3.0`
 
 ## Enviornmental Variables:
 
