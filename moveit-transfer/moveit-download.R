@@ -2,7 +2,6 @@ require(moveitAPI)
 require(dplyr)
 require(DBI)
 require(snakecase)
-require(tibble)
 
 # dotenv::load_dot_env()
 
@@ -17,14 +16,11 @@ wh_db <- Sys.getenv('WH_DB')
 wh_user <- Sys.getenv('WH_USER')
 wh_pass <- Sys.getenv('WH_PASS')
 
-max_cols <- unlist(strsplit(Sys.getenv("MAX_COLS"), ","))
-
 filename <- Sys.getenv("FILENAME")
 file_id <- Sys.getenv("FILE_ID")
 snakecase <- Sys.getenv("SNAKECASE", unset = "FALSE")
-sheet_name <- Sys.getenv("SHEET")
 
-file_type <- tolower(tools::file_ext(filename))
+file_type <- tools::file_ext(filename)
 
 # Table Fix
 pattern <- paste0(".", file_type)
@@ -33,7 +29,7 @@ table_def <- gsub(pattern, "", filename)
 table <- Sys.getenv("TABLE", unset = table_def)
 
 # Set URL
-moveit_url <- Sys.getenv("BASE_URL", unset = "alleghenycounty.us")
+moveit_url <- "alleghenycounty.us"
 
 # Auth MoveIt API
 auth <- paste0("grant_type=password&username=", user, "&password=", pass)
@@ -60,94 +56,101 @@ if (file_id == "" & filename != "") {
 file_type <- ifelse(file_type %in% c("xlsx", "xls"), "excel", file_type)
 
 # Download File
-if (sheet_name != ""){
-  temp <- readMoveItFile(moveit_url, tokens, file_id, file_type, sheet_download=sheet_name)
-}else{
-  temp <- readMoveItFile(moveit_url, tokens, file_id, file_type)
-}
+temp <- readMoveItFile(moveit_url, tokens, file_id, file_type)
 
-if (nrow(temp) > 0 ) {
-  temp <- temp %>%
-    mutate_if(is.character, iconv, from = "WINDOWS-1252", to = "UTF-8")
-}
+temp <- temp %>%
+  mutate_if(is.character, iconv, from = "WINDOWS-1252", to = "UTF-8")
 
 # Snake Case col conversion
 if (snakecase == "TRUE") {
+  colnames(temp) <- to_snake_case(colnames(temp))
+}
+
+# Connect to DataWarehouse
+wh_con <- dbConnect(odbc::odbc(), driver = "{ODBC Driver 17 for SQL Server}", server = wh_host, database = wh_db, UID = wh_user, pwd = wh_pass)
+
+# Write Table
+table_name <- paste(dept, source, table, sep = "_")
+dbWriteTable(wh_con, SQL(paste("Staging", table_name, sep =".")), temp, overwrite = TRUE)
+
+# Warehouse Disconnect
+dbDisconnect(wh_con)
+root@4a257224e8b5:/# ^C
+  root@4a257224e8b5:/# cat moveit-download.R
   require(moveitAPI)
-  require(dplyr)
-  require(DBI)
-  require(snakecase)
+require(dplyr)
+require(DBI)
+require(snakecase)
+
+# dotenv::load_dot_env()
+
+dept <- Sys.getenv("DEPT")
+source <- Sys.getenv('SOURCE')
+
+user <- Sys.getenv('MI_USER')
+pass <- Sys.getenv('MI_PASS')
+
+wh_host <- Sys.getenv('WH_HOST')
+wh_db <- Sys.getenv('WH_DB')
+wh_user <- Sys.getenv('WH_USER')
+wh_pass <- Sys.getenv('WH_PASS')
+
+filename <- Sys.getenv("FILENAME")
+file_id <- Sys.getenv("FILE_ID")
+snakecase <- Sys.getenv("SNAKECASE", unset = "FALSE")
+
+file_type <- tools::file_ext(filename)
+
+# Table Fix
+pattern <- paste0(".", file_type)
+# Table Name for Preload
+table_def <- gsub(pattern, "", filename)
+table <- Sys.getenv("TABLE", unset = table_def)
+
+# Set URL
+moveit_url <- "alleghenycounty.us"
+
+# Auth MoveIt API
+auth <- paste0("grant_type=password&username=", user, "&password=", pass)
+tokens <- authMoveIt(moveit_url, auth)
+
+# Look for file ID if name not provided
+if (file_id == "" & filename != "") {
+  # Look for File
+  file <- availableFiles(moveit_url, tokens) %>%
+    filter(name == filename)
   
-  # dotenv::load_dot_env()
-  
-  dept <- Sys.getenv("DEPT")
-  source <- Sys.getenv('SOURCE')
-  
-  user <- Sys.getenv('MI_USER')
-  pass <- Sys.getenv('MI_PASS')
-  
-  wh_host <- Sys.getenv('WH_HOST')
-  wh_db <- Sys.getenv('WH_DB')
-  wh_user <- Sys.getenv('WH_USER')
-  wh_pass <- Sys.getenv('WH_PASS')
-  
-  filename <- Sys.getenv("FILENAME")
-  file_id <- Sys.getenv("FILE_ID")
-  snakecase <- Sys.getenv("SNAKECASE", unset = "FALSE")
-  
-  file_type <- tools::file_ext(filename)
-  
-  # Table Fix
-  pattern <- paste0(".", file_type)
-  # Table Name for Preload
-  table_def <- gsub(pattern, "", filename)
-  table <- Sys.getenv("TABLE", unset = table_def)
-  
-  # Set URL
-  moveit_url <- "alleghenycounty.us"
-  
-  # Auth MoveIt API
-  auth <- paste0("grant_type=password&username=", user, "&password=", pass)
-  tokens <- authMoveIt(moveit_url, auth)
-  
-  # Look for file ID if name not provided
-  if (file_id == "" & filename != "") {
-    # Look for File
-    file <- availableFiles(moveit_url, tokens) %>%
-      filter(name == filename)
-    
-    # Grab File ID
-    if (nrow(file) == 1) {
-      file_id <- file$id[1]
-    } else if (nrow(file) > 1) {
-      stop("More than 1 file name found, please pass file ID")
-    } else {
-      stop("No file with that name found, please pass a file name that exists on the Moveit server")
-    }
-  } else if (file_id == "" & filename == "" ) {
-    stop("You did not provide a filename or file id, please pass one of these to download a file")
+  # Grab File ID
+  if (nrow(file) == 1) {
+    file_id <- file$id[1]
+  } else if (nrow(file) > 1) {
+    stop("More than 1 file name found, please pass file ID")
+  } else {
+    stop("No file with that name found, please pass a file name that exists on the Moveit server")
   }
-  
-  file_type <- ifelse(file_type %in% c("xlsx", "xls"), "excel", file_type)
-  
-  # Download File
-  temp <- readMoveItFile(moveit_url, tokens, file_id, file_type)
-  
-  temp <- temp %>%
-    mutate_if(is.character, iconv, from = "WINDOWS-1252", to = "UTF-8")
-  
-  # Snake Case col conversion
-  if (snakecase == "TRUE") {
-    colnames(temp) <- to_snake_case(colnames(temp))
-  }
-  
-  # Connect to DataWarehouse
-  wh_con <- dbConnect(odbc::odbc(), driver = "{ODBC Driver 17 for SQL Server}", server = wh_host, database = wh_db, UID = wh_user, pwd = wh_pass)
-  
-  # Write Table
-  table_name <- paste(dept, source, table, sep = "_")
-  dbWriteTable(wh_con, SQL(paste("Staging", table_name, sep =".")), temp, overwrite = TRUE)
-  
-  # Warehouse Disconnect
-  dbDisconnect(wh_con)
-  
+} else if (file_id == "" & filename == "" ) {
+  stop("You did not provide a filename or file id, please pass one of these to download a file")
+}
+
+file_type <- ifelse(file_type %in% c("xlsx", "xls"), "excel", file_type)
+
+# Download File
+temp <- readMoveItFile(moveit_url, tokens, file_id, file_type)
+
+temp <- temp %>%
+  mutate_if(is.character, iconv, from = "WINDOWS-1252", to = "UTF-8")
+
+# Snake Case col conversion
+if (snakecase == "TRUE") {
+  colnames(temp) <- to_snake_case(colnames(temp))
+}
+
+# Connect to DataWarehouse
+wh_con <- dbConnect(odbc::odbc(), driver = "{ODBC Driver 17 for SQL Server}", server = wh_host, database = wh_db, UID = wh_user, pwd = wh_pass)
+
+# Write Table
+table_name <- paste(dept, source, table, sep = "_")
+dbWriteTable(wh_con, SQL(paste("Staging", table_name, sep =".")), temp, overwrite = TRUE)
+
+# Warehouse Disconnect
+dbDisconnect(wh_con)
