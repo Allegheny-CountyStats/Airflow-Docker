@@ -34,10 +34,14 @@ RUN install2.r --error \
     ggforce \
     quarto \
     markdown \
-    tidyverse
+    tidyverse \
+    hms \
+    xfun \
+    knitr \
+    kableExtra
 
-COPY CountyStatKPI_1.0.4.tar.gz /
+COPY CountyStatKPI_1.0.5.tar.gz /
 
-RUN Rscript -e "install.packages('CountyStatKPI_1.0.4.tar.gz', repos = NULL, type = 'source')"
+RUN Rscript -e "install.packages('CountyStatKPI_1.0.5.tar.gz', repos = NULL, type = 'source')"
 
 COPY _extensions/ _extensions/
