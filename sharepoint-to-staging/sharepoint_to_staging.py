@@ -103,7 +103,10 @@ if snake_case == "YES":
     def to_snake_case(name):
         name = re.sub(r"([A-Z]+)([A-Z][a-z])", r"\1_\2", name)
         name = re.sub(r"([a-z0-9])([A-Z])", r"\1_\2", name)
+        name = re.sub(r"[!@#]", "", name)
         name = re.sub(r" ", "_", name)
+        name = re.sub(r"^_{,2}", "", name)
+        name = re.sub(r"_{,2}$", "", name)
         return name.lower()
 
 
