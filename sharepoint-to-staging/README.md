@@ -21,6 +21,8 @@ Image Name: `countystats/sharepoint-to-staging:python`
 * wh_db: Airflow Connection value*
 * wh_un: Airflow Connection value*
 * wh_pw: Airflow Connection value*
+* snakecase: Format column names in snake case
+  * Default: "NO"
 
 (*) Required variable
 
