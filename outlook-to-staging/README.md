@@ -50,3 +50,7 @@ pull_motions = DockerOperator(
         )
 ```
 
+## Graph API Resources
+* https://learn.microsoft.com/en-us/graph/api/resources/mail-api-overview?view=graph-rest-1.0
+* https://learn.microsoft.com/en-us/graph/api/resources/message?view=graph-rest-1.0#methods
+* 

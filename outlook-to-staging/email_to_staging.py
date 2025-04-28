@@ -52,6 +52,8 @@ table_name = '{}_{}_{}'.format(dept, source, table)
 # Email Information
 mailbox_id = os.getenv('mail_id', None)
 message_filter = os.getenv('message_filter')
+sort_by = os.getenv('sort_by', None)
+top_num = os.getenv('top_by', None)
 
 # Auth creds
 auth = HTTPBasicAuth(client_id, client_secret)
@@ -92,8 +94,30 @@ else:
     inbox_name = mailbox_id
 
 # Message
-url = "https://graph.microsoft.com/v1.0/users/CountyStat@alleghenycounty.us/mailFolders/{}/messages?filter={}".format(
-        inbox_name, message_filter)
+if message_filter is not None:
+    filter_text = "filter=" + message_filter
+else:
+    filter_text = None
+
+if sort_by is not None:
+    sort_text = "orderby=" + sort_by
+else:
+    sort_text = None
+
+if top_num is not None:
+    top_text = "top=" + top_num
+else:
+    top_text = None
+
+
+def combine_strings(*args, sep=" "):
+    return sep.join(str(arg) for arg in args if arg is not None)
+
+
+post_txt = combine_strings(filter_text, sort_text, top_text, sep="&")
+
+url = "https://graph.microsoft.com/v1.0/users/CountyStat@alleghenycounty.us/mailFolders/{}/messages?{}".format(
+        inbox_name, post_txt)
 messages = get_request(url, headers)
 
 att_url = "https://graph.microsoft.com/v1.0/users/CountyStat@alleghenycounty.us/mailFolders/{}/messages/{}/attachments".format(inbox_name, messages.get("value").__getitem__(0).get("id"))
