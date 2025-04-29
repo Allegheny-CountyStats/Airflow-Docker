@@ -56,17 +56,19 @@ sort_by = os.getenv('sort_by', None)
 top_num = os.getenv('top_by', None)
 
 # Auth creds
+bearer = os.getenv('bearer_token', None)
 auth = HTTPBasicAuth(client_id, client_secret)
 client = BackendApplicationClient(client_id=client_id)
 oauth = OAuth2Session(client=client)
 
-# Auth token
-token = oauth.fetch_token(
-    token_url='https://login.microsoftonline.com/e0273d12-e4cb-4eb1-9f70-8bba16fb968d/oauth2/v2.0/token',
-    scope='https://graph.microsoft.com/.default',
-    auth=auth)
+if bearer is None:
+    # Auth token
+    token = oauth.fetch_token(
+        token_url='https://login.microsoftonline.com/e0273d12-e4cb-4eb1-9f70-8bba16fb968d/oauth2/v2.0/token',
+        scope='https://graph.microsoft.com/.default',
+        auth=auth)
 
-bearer = "Bearer {}".format(token['access_token'])
+    bearer = "Bearer {}".format(token['access_token'])
 headers = {'authorization': bearer}
 
 
