@@ -5,6 +5,7 @@ MAINTAINER Daniel Andrus "daniel.andrus@alleghenycounty.us"
 RUN pip install oauthlib requests-oauthlib xlrd openpyxl
 
 COPY email_to_staging.py /
+COPY check_email.py /
 
 COPY SSL.fwd.proxy.2024.crt /usr/local/share/ca-certificates/SSL.fwd.proxy.2024.crt
 #RUN chmod 644 /usr/local/share/ca-certificates/SSL.fwd.proxy.2024.crt
