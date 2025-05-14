@@ -9,9 +9,9 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
     gdebi-core \
     && rm -rf /var/lib/apt/lists/*
 
-COPY quarto-1.5.57-linux-amd64.deb /
+COPY quarto-1.6.40-linux-amd64.deb /
 
-RUN dpkg -i quarto-1.5.57-linux-amd64.deb
+RUN dpkg -i quarto-1.6.40-linux-amd64.deb
 
 RUN apt-get update && apt-get install -y \
     python3-pip
@@ -40,8 +40,8 @@ RUN install2.r --error \
     knitr \
     kableExtra
 
-COPY CountyStatKPI_1.0.5.tar.gz /
+COPY CountyStatKPI_1.0.7.tar.gz /
 
-RUN Rscript -e "install.packages('CountyStatKPI_1.0.5.tar.gz', repos = NULL, type = 'source')"
+RUN Rscript -e "install.packages('CountyStatKPI_1.0.7.tar.gz', repos = NULL, type = 'source')"
 
 COPY _extensions/ _extensions/
