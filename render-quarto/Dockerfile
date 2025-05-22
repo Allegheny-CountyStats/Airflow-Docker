@@ -40,8 +40,8 @@ RUN install2.r --error \
     knitr \
     kableExtra
 
-COPY CountyStatKPI_1.0.7.tar.gz /
+COPY CountyStatKPI_1.0.8.tar.gz /
 
-RUN Rscript -e "install.packages('CountyStatKPI_1.0.7.tar.gz', repos = NULL, type = 'source')"
+RUN Rscript -e "install.packages('CountyStatKPI_1.0.8.tar.gz', repos = NULL, type = 'source')"
 
 COPY _extensions/ _extensions/
