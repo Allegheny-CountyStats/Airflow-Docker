@@ -38,10 +38,15 @@ RUN install2.r --error \
     hms \
     xfun \
     knitr \
-    kableExtra
+    kableExtra \
+    palmerpenguins \
+    leaflegend \
+    ggtext
 
-COPY CountyStatKPI_1.0.8.tar.gz /
+COPY CountyStatKPI_1.0.10.tar.gz /
 
-RUN Rscript -e "install.packages('CountyStatKPI_1.0.8.tar.gz', repos = NULL, type = 'source')"
+RUN Rscript -e "install.packages('CountyStatKPI_1.0.10.tar.gz', repos = NULL, type = 'source')"
+
+RUN Rscript -e "devtools::install_version('plotly', version = '4.10.4')"
 
 COPY _extensions/ _extensions/
