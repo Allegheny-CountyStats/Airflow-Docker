@@ -71,6 +71,7 @@ else:
     url = "https://graph.microsoft.com/v1.0/sites/{}/drive/items/{}/content".format(drive, file_id)
 
 file = requests.request("GET", url, data="", headers=headers)
+file.raise_for_status()
 
 if filetype == 'x':
     filename = 'test.xlsx'
