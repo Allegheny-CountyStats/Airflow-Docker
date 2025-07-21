@@ -7,7 +7,7 @@ LONG_DESCRIPTION = 'Package with functions that can be used on callback, as a py
 # Setting up
 setup(
     # the name must match the folder name 'verysimplemodule'
-    name="hootnholler",
+    name="CountyStat-Airflow",
     version=VERSION,
     author="Daniel Andrus",
     author_email="<daniel.andrus@alleghenycounty.us>",
