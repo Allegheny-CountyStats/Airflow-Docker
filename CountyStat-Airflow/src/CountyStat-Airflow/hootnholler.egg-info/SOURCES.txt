@@ -1,6 +1,0 @@
-setup.py
-hootnholler.egg-info/PKG-INFO
-hootnholler.egg-info/SOURCES.txt
-hootnholler.egg-info/dependency_links.txt
-hootnholler.egg-info/requires.txt
-hootnholler.egg-info/top_level.txt

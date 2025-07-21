@@ -7,11 +7,8 @@ import pantab
 import tableauserverclient as TSC
 import sys
 from tableauhyperapi import TableName
-import re
 import gc
 from sqlalchemy.engine import URL
-import requests
-from requests.models import PreparedRequest
 
 # Env Variables
 # Data Vars
@@ -35,13 +32,6 @@ server = os.getenv('server', 'tableau')
 tableau_username = os.getenv("ts_username")
 tableau_password = os.getenv("ts_password")
 
-# Hoot Vars
-hoot_sentry = os.getenv("HOOT_SENTRY", None)
-hoot_token = os.getenv("HOOT_TOKEN")
-hoot_user_message = os.getenv("HOOT_USER_MESSAGE")
-hoot_history_note = os.getenv("HOOT_HISTORY_NOTE")
-hoot_cookie = os.getenv("HOOT_COOKIE")
-
 # Load Datawarehouse Credentials
 wh_host = os.getenv("wh_host")
 wh_db = os.getenv("wh_db")
@@ -50,15 +40,15 @@ wh_pw = os.getenv("wh_pass")
 
 # Build Connection & Query Warehouse
 connection_url = URL.create(
-                    "mssql+pyodbc",
-                    username=wh_un,
-                    password=wh_pw,
-                    host=wh_host,
-                    database=wh_db,
-                    query={
-                        "driver": "ODBC Driver 17 for SQL Server"
-                    },
-                )
+    "mssql+pyodbc",
+    username=wh_un,
+    password=wh_pw,
+    host=wh_host,
+    database=wh_db,
+    query={
+        "driver": "ODBC Driver 17 for SQL Server"
+    },
+)
 engine = sa.create_engine(connection_url)
 
 # Pull Date and DateTime Columns
@@ -87,7 +77,7 @@ for df in pd.read_sql_query("SELECT {} FROM {}.{}".format(column_q, schema, tabl
         for col in list(df):
             if col in datecols:
                 print(f'Set {col} to dateimte', file=sys.stderr)
-                df[col] = pd.to_datetime(df[col], errors = 'coerce')
+                df[col] = pd.to_datetime(df[col], errors='coerce')
                 # Remove Timezone for Hyper file
     for col in df.select_dtypes('datetimetz').columns:
         print(f'Fixing {col} timezone', file=sys.stderr)
@@ -112,7 +102,7 @@ for df in pd.read_sql_query("SELECT {} FROM {}.{}".format(column_q, schema, tabl
         print('Completed Chunk {}.'.format(count), file=sys.stderr)
         count = 1
     gc.collect()
-    
+
 # Connect to Tableau Server
 server = TSC.Server('https://{}.alleghenycounty.us'.format(server))
 server.version = '3.3'
@@ -163,27 +153,3 @@ print('Writing Hyperfile to Tableau Server.', file=sys.stderr)
 # publish data source (specified in file_path)
 with server.auth.sign_in(tableau_auth):
     server.datasources.publish(upload, r'temp.hyper', mode)
-
-# Hoot
-if hoot_sentry is not None:
-    url = "https://data.world/h/api/v1/sentries/{}?".format(hoot_sentry)
-    ssl_path = '/etc/ssl/certs/ca-certificates.crt'
-    if hoot_token is None:
-        raise TypeError('No Bearer Token Supplied for Data.World API Call')
-
-    payload = {}
-    params = {'state': 'happy', 'user_message': hoot_user_message, 'history_note': hoot_history_note,
-              'private_entry': 'True'}
-    req = PreparedRequest()
-    req.prepare_url(url, params)
-    headers = {
-        'Authorization': hoot_token,
-        'Cookie': hoot_cookie
-    }
-
-    response = requests.request("POST", req.url, headers=headers, data=payload, verify=ssl_path)
-    try:
-        response.raise_for_status()
-    except requests.exceptions.HTTPError as e:
-        "Error: " + str(e)
-
