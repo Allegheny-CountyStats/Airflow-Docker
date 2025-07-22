@@ -1,4 +1,4 @@
-from setuptools import setup, find_packages
+from setuptools import setup, find_namespace_packages
 
 VERSION = '0.0.3'
 DESCRIPTION = 'Package to run Airflow tasks for a Slack Alert and Hoot Update/Verfication'
@@ -7,16 +7,14 @@ LONG_DESCRIPTION = 'Package with functions that can be used on callback, as a py
 # Setting up
 setup(
     # the name must match the folder name 'verysimplemodule'
-    name="CountyStat_Airflow",
+    name="CountyStatAirflow",
     version=VERSION,
     author="Daniel Andrus",
     author_email="<daniel.andrus@alleghenycounty.us>",
     description=DESCRIPTION,
     long_description=LONG_DESCRIPTION,
-    packages=find_packages(),
-    install_requires=['apache-airflow', 'requests'],  # add any additional packages that
-    # needs to be installed along with your package. Eg: 'caer'
-
+    packages=find_namespace_packages(where='src'),
+    install_requires=['requests', 'airflow'],
     keywords=['python', 'first package'],
     classifiers=[
         "Development Status :: 2 - Pre-Alpha",
