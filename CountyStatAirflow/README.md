@@ -1,4 +1,4 @@
-# CountyStat-Airflow
+# CountyStat_Airflow
 
 Python package used by CountyStat for Airflow operations:
 * DevTest

@@ -1,6 +1,6 @@
 [project]
-name = "CountyStat-Airflow"
-version = "0.0.1"
+name = "CountyStatAirflow"
+version = "0.0.3"
 authors = [
   { name="Daniel Andrus", email="Daniel.Andrus@AlleghenyCounty.us" },
 ]

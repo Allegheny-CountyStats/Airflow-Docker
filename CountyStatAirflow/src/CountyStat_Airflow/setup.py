@@ -1,13 +1,13 @@
 from setuptools import setup, find_packages
 
-VERSION = '0.0.1'
+VERSION = '0.0.3'
 DESCRIPTION = 'Package to run Airflow tasks for a Slack Alert and Hoot Update/Verfication'
 LONG_DESCRIPTION = 'Package with functions that can be used on callback, as a python operator, or other utility within and Airflow DAG. Functions include a Slack-Alert for failed tasks and Hoot Status Alert/Update.'
 
 # Setting up
 setup(
     # the name must match the folder name 'verysimplemodule'
-    name="CountyStat-Airflow",
+    name="CountyStat_Airflow",
     version=VERSION,
     author="Daniel Andrus",
     author_email="<daniel.andrus@alleghenycounty.us>",
