@@ -5,7 +5,7 @@ This script will take data from the Datawarehouse and upload it to the Tableau S
 Image Name: `countystats/tableau-transfer:python`
 Tags:
 * 1.0
-  * Contains Tableau-Transfer.py updated with hoots
+  * Contains Tableau-Transfer.py updated with hoots (DECOMISSIONED)
 * python
   * Regular use
 
