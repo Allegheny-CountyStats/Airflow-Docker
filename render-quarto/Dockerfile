@@ -1,6 +1,6 @@
 FROM countystats/r-geo:4.2
 
-MAINTAINER Geoffrey Arnold "geoffrey.arnold@alleghenycounty.us"
+LABEL org.opencontainers.image.authors="geoffrey.arnold@alleghenycounty.us"
 
 RUN apt-get update && apt-get install -y --no-install-recommends \
     pandoc \
@@ -43,9 +43,9 @@ RUN install2.r --error \
     leaflegend \
     ggtext
 
-COPY CountyStatKPI_1.0.10.tar.gz /
+COPY CountyStatKPI_1.0.11.tar.gz /
 
-RUN Rscript -e "install.packages('CountyStatKPI_1.0.10.tar.gz', repos = NULL, type = 'source')"
+RUN Rscript -e "install.packages('CountyStatKPI_1.0.11.tar.gz', repos = NULL, type = 'source')"
 
 RUN Rscript -e "devtools::install_version('plotly', version = '4.10.4')"
 
