@@ -1,7 +1,7 @@
 from countystats/r-basic:4.2
 
 RUN install2.r --error \
-   	dplyr \
+   	tidyverse \
 	DBI \
 	RPostgres
 

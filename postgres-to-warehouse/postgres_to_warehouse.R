@@ -1,5 +1,5 @@
 require(DBI)
-require(dplyr)
+require(tidyverse)
 require(RPostgres)
 require(odbc)
 
