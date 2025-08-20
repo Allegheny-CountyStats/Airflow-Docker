@@ -11,7 +11,7 @@ source <- Sys.getenv("SOURCE", unset = database)
 dept <- Sys.getenv("DEPT")
 schema <- Sys.getenv("SCHEMA", "Staging")
 
-wh_host <- Sys.getenv('WH_HOST')
+wh_host <- Sys.getenv('DEV_HOST')
 wh_db <- Sys.getenv('WH_DB')
 wh_user <- Sys.getenv('WH_USER')
 wh_pass <- Sys.getenv('WH_PASS')
