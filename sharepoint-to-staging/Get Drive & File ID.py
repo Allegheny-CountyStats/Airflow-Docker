@@ -20,8 +20,8 @@ pd.set_option('display.max_colwidth', 1000)
 client_id = os.getenv("client_id")
 client_secret = os.getenv("client_secret")
 drive_type = 'sites' # drive for user (other for sharepoint sites)
-drive_name = 'Budget - CountyStat Data Exchange' # Use Sharepoint display name
-file_name = 'ARPA Budget File.xlsx'
+drive_name = 'Parks - CountyStat Data Exchange' # Use Sharepoint display name
+file_name = 'Park Rangers Programs Reporting Form Responses.xlsx'
 parsed_name = urllib.parse.quote(file_name)
 
 auth = HTTPBasicAuth(client_id, client_secret)
