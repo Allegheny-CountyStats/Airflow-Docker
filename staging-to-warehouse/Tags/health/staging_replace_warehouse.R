@@ -47,7 +47,7 @@ WHERE TABLE_NAME = '", table_name, "' AND TABLE_SCHEMA = 'Staging'")
     col_names <- dbGetQuery(wh_con, cols)$COLUMN_NAME %>%
       paste(collapse = "], [")
     
-    # Append to Master Table
+    # Append to Master Table 
     sql_insert <- paste0("WITH NewData AS (SELECT * FROM ", prel_table, ")
                         INSERT INTO ", new_table, " ([", col_names, "]) SELECT * FROM NewData;")
     y <- dbExecute(wh_con, sql_insert)
