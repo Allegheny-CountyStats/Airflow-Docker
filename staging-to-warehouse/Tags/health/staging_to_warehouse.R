@@ -27,7 +27,7 @@ for (table in tables) {
   new_table <- paste0(target_schema, ".", paste(dept, source, table, sep = "_"))
   
   # Check to see if table has already been moved in previous run
-  if (dbExistsTable(wh_con, SQL(prel_table))) {
+  if (dbExistsTable(wh_con, DBI::Id(schema = "Staging", table = paste(dept, source, table, sep = "_")))) {
     if (table %in% req_tables){
       id_q <- paste0("SELECT DISTINCT [", id_col, "] FROM ", prel_table, "")
       id_df <- dbGetQuery(wh_con, id_q)

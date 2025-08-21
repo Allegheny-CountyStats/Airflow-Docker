@@ -1,10 +1,10 @@
-from countystats/r-basic:4.2
+FROM countystats/r-basic:4.2
 
 RUN install2.r --error \
    	dplyr \
 	DBI
 
-MAINTAINER Geoffrey Arnold "geoffrey.arnold@alleghenycounty.us"
+LABEL maintainer="Daniel Andrus daniel.andrus@alleghenycounty.us"
 
 COPY staging_to_warehouse.R /
 

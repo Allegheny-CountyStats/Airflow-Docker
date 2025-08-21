@@ -31,7 +31,7 @@ for (table in tables) {
   new_table <- paste0(target_schema, ".", paste(dept, source, table, sep = "_"))
   
   # Skip if No Table to Append with
-  if(dbExistsTable(wh_con, SQL(new_table))) {
+  if(dbExistsTable(wh_con, DBI::Id(schema = target_schema, table = paste(dept, source, table, sep = "_")))) {
     # Delete rows
     sql_insert <- paste0("
     DELETE m
