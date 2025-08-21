@@ -28,7 +28,9 @@ for (table in tables) {
   if (dbExistsTable(wh_con, SQL(new_table))) {
     cols <- paste0("SELECT COLUMN_NAME
   FROM INFORMATION_SCHEMA.COLUMNS
-  WHERE TABLE_NAME = '", table_name, "' AND TABLE_SCHEMA = 'Staging'")
+  WHERE TABLE_NAME = '", table_name, "' AND TABLE_SCHEMA = 'Staging'
+  ORDER BY ORDINAL_POSITION 
+                   ")
     col_names <- dbGetQuery(wh_con, cols)$COLUMN_NAME %>%
       paste(collapse = "], [")
     
