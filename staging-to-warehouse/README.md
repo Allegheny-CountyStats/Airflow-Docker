@@ -21,7 +21,7 @@ staging_to_warehouse = DockerOperator(
                 task_id='staging_to_warehouse',
                 image='countystats/staging-to-warehouse:r',
                 api_version='1.39',
-                auto_remove=True,
+                auto_remove='force',
                 environment={
                     'DEPT': 'Department_Name',
                     'TABLES': 'Name,Of,Tables,Comma,Separated',
@@ -48,7 +48,7 @@ staging_to_warehouse = DockerOperator(
                 task_id='staging_to_warehouse',
                 image='countystats/staging-to-warehouse:r',
                 api_version='1.39',
-                auto_remove=True,
+                auto_remove='force',
                 environment={
                     'DEPT': 'Department_Name_and/or_Warehouse_Schema',
                     'TABLE': 'TableName' OR 'TABLES': 'Comma,Separated,Table,Names',
