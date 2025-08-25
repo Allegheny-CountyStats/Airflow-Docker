@@ -51,7 +51,7 @@ schema = schema_device = DockerOperator(
                 task_id='schema_validate',
                 image='countystats/data-validate:r',
                 api_version='1.39',
-                auto_remove=True,
+                auto_remove='force',
                 environment={
                     'DEPT': 'Example Dept',
                     'TABLE': 'some_table',
@@ -86,7 +86,7 @@ tables = clean_list(tables_l)
             task_id=f'Validate_{variable}',
             image='countystats/data-validate:r',
             api_version='1.39',
-            auto_remove=True,
+            auto_remove='force',
             environment={
                 'DEPT': dept,
                 'TABLE': variable,
