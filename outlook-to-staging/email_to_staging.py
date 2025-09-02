@@ -83,7 +83,7 @@ def get_request(url_name, headers_list):
         print(f"An error occurred: {e}")
     else:
         print("Request was successful.")
-    return response.json()
+        return response.json()
 
 
 # Inbox
@@ -157,7 +157,9 @@ if filetype != 'csv':
     if filetype != 'x':
         df = df.loc[:, ~df.columns.str.startswith('Unnamed')]
 
-print(df.head())
+if filetype == 'text':
+    doit = 1+2
+# print(df.head())
 
 if snake_case == "YES":
     def to_snake_case(name):
