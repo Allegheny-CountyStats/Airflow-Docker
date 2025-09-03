@@ -4,15 +4,11 @@ from oauthlib.oauth2 import BackendApplicationClient
 from requests.auth import HTTPBasicAuth
 from requests_oauthlib import OAuth2Session
 import requests
-import json
-import urllib.parse
 import pandas as pd
 import os
 import sqlalchemy as sa
-import time
 from sqlalchemy.engine import URL
 import re
-import json
 from io import BytesIO
 
 # Load Datawarehouse Credentials
@@ -22,10 +18,12 @@ wh_un = os.getenv("wh_user")
 wh_pw = os.getenv("wh_pass")
 schema = os.getenv("schema", 'Staging')
 
+# File formats
 sheet = os.getenv("sheet", '')
 skip = int(os.getenv('skip', 0))
 filetype = os.getenv("filetype", '')
 snake_case = os.getenv("snakecase", "NO")
+text_sep = os.getenv("text_sep", '\t')
 
 # Build Connection & Query Warehouse
 connection_url = URL.create(
@@ -54,6 +52,19 @@ mailbox_id = os.getenv('mail_id', None)
 message_filter = os.getenv('message_filter')
 sort_by = os.getenv('sort_by', None)
 top_num = os.getenv('top_by', None)
+message_id = os.getenv('message_id', None)
+
+
+# Snakecase function
+def to_snake_case(name):
+    name = re.sub(r"([A-Z]+)([A-Z][a-z])", r"\1_\2", name)
+    name = re.sub(r"([a-z0-9])([A-Z])", r"\1_\2", name)
+    name = re.sub(r"[!@#]", "", name)
+    name = re.sub(r" ", "_", name)
+    name = re.sub(r"^_{,2}", "", name)
+    name = re.sub(r"_{,2}$", "", name)
+    return name.lower()
+
 
 # Auth creds
 bearer = os.getenv('bearer_token', None)
@@ -118,21 +129,30 @@ def combine_strings(*args, sep=" "):
 
 post_txt = combine_strings(filter_text, sort_text, top_text, sep="&")
 
-url = "https://graph.microsoft.com/v1.0/users/CountyStat@alleghenycounty.us/mailFolders/{}/messages?{}".format(
-        inbox_name, post_txt)
-messages = get_request(url, headers)
+if message_id is None:
+    url = "https://graph.microsoft.com/v1.0/users/CountyStat@alleghenycounty.us/mailFolders/{}/messages?{}".format(
+            inbox_name, post_txt)
+    messages = get_request(url, headers)
+    message_id = messages.get("value").__getitem__(0).get("id")
 
-att_url = "https://graph.microsoft.com/v1.0/users/CountyStat@alleghenycounty.us/mailFolders/{}/messages/{}/attachments".format(inbox_name, messages.get("value").__getitem__(0).get("id"))
+att_url = "https://graph.microsoft.com/v1.0/users/CountyStat@alleghenycounty.us/mailFolders/{}/messages/{}/attachments".format(inbox_name, message_id)
 attachment = get_request(att_url, headers)
 
 att_raw_url = "{}/{}/$value".format(att_url, attachment.get("value").__getitem__(0).get("id"))
 attachment_raw = requests.request("GET", att_raw_url, data="", headers=headers)
+filetype_list = ['csv', 'text']
 
 if filetype == 'csv':
     csv_file = BytesIO(attachment_raw.content)
     df = pd.read_csv(csv_file)
 
-if filetype != 'csv':
+if filetype == 'text':
+    with open(f'temp.txt', 'wb') as f:
+        for chunk in attachment_raw.iter_content(chunk_size=8192):
+            f.write(chunk)
+    df = pd.read_csv('temp.txt', sep=text_sep)
+
+if filetype not in filetype_list:
     if filetype == 'x':
         filename = 'test.xlsx'
     else:
@@ -157,21 +177,7 @@ if filetype != 'csv':
     if filetype != 'x':
         df = df.loc[:, ~df.columns.str.startswith('Unnamed')]
 
-if filetype == 'text':
-    doit = 1+2
-# print(df.head())
-
 if snake_case == "YES":
-    def to_snake_case(name):
-        name = re.sub(r"([A-Z]+)([A-Z][a-z])", r"\1_\2", name)
-        name = re.sub(r"([a-z0-9])([A-Z])", r"\1_\2", name)
-        name = re.sub(r"[!@#]", "", name)
-        name = re.sub(r" ", "_", name)
-        name = re.sub(r"^_{,2}", "", name)
-        name = re.sub(r"_{,2}$", "", name)
-        return name.lower()
-
-
     df.columns = [to_snake_case(col) for col in df.columns]
 
 
