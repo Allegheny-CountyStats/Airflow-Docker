@@ -1,6 +1,6 @@
-from countystats/python3:10
+FROM countystats/python3:10
 
-MAINTAINER Daniel Andrus "daniel.andrus@alleghenycounty.us"
+LABEL maintainer="Daniel Andrus daniel.andrus@alleghenycounty.us"
 
 RUN pip install oauthlib requests-oauthlib xlrd openpyxl
 
