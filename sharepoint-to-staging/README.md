@@ -36,7 +36,7 @@ pull_motions = DockerOperator(
                 task_id='pull_motions',
                 image='countystats/sharepoint-to-staging:python',
                 api_version='1.39',
-                auto_remove=True,
+                auto_remove='force',
                 environment={
                     'wh_host': wh_connection.host,
                     'wh_db': wh_connection.schema,
