@@ -9,7 +9,7 @@ def task_fail_slack_alert(context):
             :red_circle: Task Failed. 
             *Task*: {task}  
             *Dag*: {dag} 
-            *Execution Time*: {exec_date}  
+            *Execution Time*: {logical_date}  
             *Log Url*: {log_url} 
             """.format(
         task=context.get('task_instance').task_id,
