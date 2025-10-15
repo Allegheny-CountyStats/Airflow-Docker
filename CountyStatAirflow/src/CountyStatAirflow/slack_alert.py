@@ -16,7 +16,7 @@ def slack_airflow_notification(**context):
         task=context.get('task_instance').task_id,
         dag=context.get('task_instance').dag_id,
         ti=context.get('task_instance'),
-        exec_date=context.get('execution_date'),
+        exec_date=context.get('logical_date'),
         log_url=context.get('task_instance').log_url,
     )
     SlackNotifier(
