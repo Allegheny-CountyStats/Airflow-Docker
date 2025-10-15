@@ -48,7 +48,7 @@ tableau_demog = DockerOperator(
                 task_id='tableau_demog',
                 image='countystats/tableau-transfer:python',
                 api_version='1.39',
-                auto_remove=True,
+                auto_remove='force',
                 environment={
                     'name': 'Example',
                     'dept': dept,

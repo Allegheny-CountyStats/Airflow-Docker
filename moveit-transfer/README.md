@@ -10,7 +10,7 @@ Image Name: `countystats/moveit-transfer:2.0` or `countystats/moveit-transfer:r`
 
 * DEPT: Department and schema in Datawarehouse*
 * TABLE: Table name for transfer to/from in Datawarehouse*
-* FILNAME: 
+* FILENAME: 
   * transfer: File name to upload to move it server
     * Default: Table name ending with `.csv`
   * download: File name to download off the move it server§
