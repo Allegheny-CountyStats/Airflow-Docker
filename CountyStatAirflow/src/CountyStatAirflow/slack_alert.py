@@ -1,7 +1,7 @@
 from airflow.providers.slack.operators.slack_webhook import SlackWebhookOperator
 
 # Slack Alerts
-SLACK_CONN_ID = 'slack'
+SLACK_CONN_ID = "slack"
 
 
 def task_fail_slack_alert(context):
