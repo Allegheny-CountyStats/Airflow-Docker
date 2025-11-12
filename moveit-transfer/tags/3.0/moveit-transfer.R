@@ -62,7 +62,7 @@ wh_con <- dbConnect(odbc::odbc(), driver = "{ODBC Driver 17 for SQL Server}", se
 
 # Query Table
 if (sql == "") {
-  temp <- dbReadTable(wh_con, SQL(paste0(schema, "." , table)))
+  temp <- dbReadTable(wh_con, SQL(paste0(schema, "../2.1", table)))
 } else {
   temp <- dbGetQuery(wh_con, sql)
 }
