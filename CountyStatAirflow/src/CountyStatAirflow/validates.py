@@ -1,7 +1,7 @@
 from airflow.providers.docker.operators.docker import DockerOperator
 from airflow.sdk import Variable, task_group
 
-def validate_task(variable, dept = dept, schema = connection.schema, pool = 'default', url_var = 'docker_remote'):
+def validate_task(variable, dept = dept, schema = connection.schema, pool = 'Remote_Pool', url_var = 'docker_remote'):
     validate_schema = DockerOperator(
         task_id=f'Validate_{variable}',
         image='countystats/data-validate:r',
@@ -20,15 +20,15 @@ def validate_task(variable, dept = dept, schema = connection.schema, pool = 'def
         docker_url= Variable.get(url_var),
         command='Rscript schema-validate.R',
         network_mode="bridge",
+        mount_tmp_dir=False,
         pool=pool
     )
     return validate_schema
 
-@task_group(group_id='data_validations', dept = dept, schema = connection.schema, pool = 'default')
 def data_validation(table_list, ):
     """
     :rtype: DependencyMixIn
     """
     for tables_l in table_list[0:]:
-        task_iterate = validate_task(tables_l, dept, schema, pool)
+        task_iterate = validate_task(tables_l, dept, schema, pool, url_var)
         task_iterate
