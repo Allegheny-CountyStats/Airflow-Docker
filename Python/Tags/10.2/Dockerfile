@@ -34,6 +34,8 @@ RUN chmod 644 /usr/local/share/ca-certificates/Allegheny-ENTCRT01-CA.crt  \
     && chmod 644 /usr/local/share/ca-certificates/ACUS2026.crt \
     && update-ca-certificates
 
+RUN export DEBIAN_FRONTEND=noninteractive
+
 RUN curl -O https://packages.microsoft.com/config/debian/12/packages-microsoft-prod.deb \
     && dpkg -i packages-microsoft-prod.deb \
     && rm packages-microsoft-prod.deb \
@@ -43,10 +45,9 @@ RUN curl -O https://packages.microsoft.com/config/debian/12/packages-microsoft-p
         mssql-tools \
         msodbcsql18 \
         mssql-tools18 \
-    && echo 'export PATH="$PATH:/opt/mssql-tools/bin"' >> ~/.bashrc  \
-    && source ~/.bashrc \
-    && apt-get install -y unixodbc-dev \
-        libgssapi-krb5-2
+        unixodbc-dev \
+        libgssapi-krb5-2 \
+    && apt-get clean
 
 COPY requirements.txt ./
 
