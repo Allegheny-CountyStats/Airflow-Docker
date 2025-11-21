@@ -1,6 +1,6 @@
-FROM python:3.10
+FROM python:3.10-bookworm
 
-MAINTAINER Geoffrey Arnold "geoffrey.arnold@alleghenycounty.us"
+LABEL maintainer="Daniel Andrus daniel.andrus@alleghenycounty.us"
 
 RUN apt-get update && apt-get install -y \
 	libaio-dev \
@@ -28,22 +28,31 @@ RUN apt-get update \
         curl \
     && apt-get clean
 
-RUN curl https://packages.microsoft.com/keys/microsoft.asc | apt-key add - \
-    && curl https://packages.microsoft.com/config/debian/10/prod.list > /etc/apt/sources.list.d/mssql-release.list \
+COPY Allegheny-ENTCRT01-CA.crt /usr/local/share/ca-certificates/
+COPY ACUS2026.crt /usr/local/share/ca-certificates/
+RUN chmod 644 /usr/local/share/ca-certificates/Allegheny-ENTCRT01-CA.crt  \
+    && chmod 644 /usr/local/share/ca-certificates/ACUS2026.crt \
+    && update-ca-certificates
+
+RUN export DEBIAN_FRONTEND=noninteractive
+
+RUN curl -O https://packages.microsoft.com/config/debian/12/packages-microsoft-prod.deb \
+    && dpkg -i packages-microsoft-prod.deb \
+    && rm packages-microsoft-prod.deb \
     && apt-get update \
     && ACCEPT_EULA=Y apt-get -y install \
         msodbcsql17 \
-        libgssapi-krb5-2 \
+        mssql-tools \
+        msodbcsql18 \
+        mssql-tools18 \
         unixodbc-dev \
-    && apt-get clean  
+        libgssapi-krb5-2 \
+    && apt-get clean
 
 COPY requirements.txt ./
 
 RUN pip3 install --upgrade pip && \
     pip3 install --no-cache-dir -r requirements.txt
-
-COPY Allegheny-ENTCRT01-CA.crt /usr/local/share/ca-certificates/
-RUN chmod 644 /usr/local/share/ca-certificates/Allegheny-ENTCRT01-CA.crt && update-ca-certificates
 
 ENV REQUESTS_CA_BUNDLE='/etc/ssl/certs/ca-certificates.crt'
 ENV SSL_CERT_FILE='/etc/ssl/certs/ca-certificates.crt'
