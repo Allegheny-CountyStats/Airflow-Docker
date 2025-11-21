@@ -1,6 +1,6 @@
 from countystats/r-basic:4.3
 
-MAINTAINER Geoffrey Arnold "geoffrey.arnold@alleghenycounty.us"
+LABEL maintainer="Daniel Andrus daniel.andrus@alleghenycounty.us"
 
 COPY moveitAPI_0.3.0.tar.gz /
 
