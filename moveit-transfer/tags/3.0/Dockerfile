@@ -1,4 +1,4 @@
-from countystats/r-basic:4.3
+FROM countystats/r-basic:4.3
 
 LABEL maintainer="Daniel Andrus daniel.andrus@alleghenycounty.us"
 
