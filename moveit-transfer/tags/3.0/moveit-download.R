@@ -44,7 +44,7 @@ if (file_id == "" & filename != "") {
   # Look for File
   file <- availableFiles(moveit_url, tokens) %>%
     filter(name == filename)
-  
+
   # Grab File ID
   if (nrow(file) == 1) {
     file_id <- file$id[1]
@@ -85,27 +85,27 @@ table_name <- paste(dept, source, table, sep = "_")
 if (any(max_cols %in% colnames(temp)) & nrow(temp) > 0) {
   # ID Max Cols for this table
   cols <- colnames(temp)[which(colnames(temp) %in% max_cols)]
-  
+
   # Create Max Cols Type List
   types <- data.frame(cols = cols) %>%
     mutate(names = "varchar(max)") %>%
     deframe() %>%
     as.list()
-  
+
   # Move Max columns to end of table
   temp <- select(temp, c(-all_of(cols), everything()))
-  
+
   # Transfer Data to Warehouse
   dbWriteTable(wh_con, SQL(paste("Staging", table_name, sep =".")), temp, field.type = types, overwrite = TRUE)
 } else if (any(max_cols == "auto")) {
-  list <- lapply(temp, function(x) max(nchar(x), na.rm = T)) 
+  list <- lapply(temp, function(x) max(nchar(x), na.rm = T))
   max_cols <- temp[sapply(temp, function(x) max(nchar(x), na.rm = T))> 255]
-  
+
   types <- data.frame(cols = colnames(max_cols)) %>%
     mutate(names = "varchar(max)") %>%
     deframe() %>%
     as.list()
-  
+
   # Transfer Data to Warehouse
   dbWriteTable(wh_con, SQL(paste("Staging", table_name, sep =".")), temp, field.type = types, overwrite = TRUE)
 } else {
