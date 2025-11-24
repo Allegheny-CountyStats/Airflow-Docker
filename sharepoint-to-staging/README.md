@@ -50,7 +50,19 @@ pull_motions = DockerOperator(
                     'file_id': 'some_other_id_from_notebook'
                 },
                 docker_url='unix://var/run/docker.sock',
-                network_mode="bridge"
+                network_mode="bridge",
+                mounts=[
+                    Mount(
+                        source='/usr/local/share/ca-certificates/',
+                        target='/usr/local/share/ca-certificates/',
+                        type='bind'
+                    ),
+                    Mount(
+                        source='/etc/ssl/certs/',
+                        target='/etc/ssl/certs/',
+                        type='bind'
+                    )
+                ]
         )
 ```
 
@@ -97,7 +109,17 @@ upload_motions = DockerOperator(
                                 source='/media/CountyExecutive',
                                 target='/CountyExec',
                                 type='bind'
-                            )
+                            ),
+                        Mount(
+                            source='/usr/local/share/ca-certificates/',
+                            target='/usr/local/share/ca-certificates/',
+                            type='bind'
+                        ),
+                        Mount(
+                            source='/etc/ssl/certs/',
+                            target='/etc/ssl/certs/',
+                            type='bind'
+                        )
                 ]
         )
 ```

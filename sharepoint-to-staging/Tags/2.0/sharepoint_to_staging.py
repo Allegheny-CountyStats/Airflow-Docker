@@ -1,17 +1,12 @@
 #!/usr/bin/env python
 # coding: utf-8
-from fileinput import filename
-
 from oauthlib.oauth2 import BackendApplicationClient
 from requests.auth import HTTPBasicAuth
 from requests_oauthlib import OAuth2Session
 import requests
-import json
-import urllib.parse
 import pandas as pd
 import os
 import sqlalchemy as sa
-import time
 from sqlalchemy.engine import URL
 import re
 
@@ -73,6 +68,7 @@ else:
     url = "https://graph.microsoft.com/v1.0/sites/{}/drive/items/{}/content".format(drive, file_id)
 
 file = requests.request("GET", url, data="", headers=headers)
+file.raise_for_status()
 
 if filetype == 'x':
     filename = 'test.xlsx'
