@@ -55,12 +55,14 @@ pull_motions = DockerOperator(
                     Mount(
                         source='/usr/local/share/ca-certificates/',
                         target='/usr/local/share/ca-certificates/',
-                        type='bind'
+                        type='bind',
+                        read_only=True
                     ),
                     Mount(
                         source='/etc/ssl/certs/',
                         target='/etc/ssl/certs/',
-                        type='bind'
+                        type='bind',
+                        read_only=True
                     )
                 ]
         )
@@ -113,12 +115,14 @@ upload_motions = DockerOperator(
                         Mount(
                             source='/usr/local/share/ca-certificates/',
                             target='/usr/local/share/ca-certificates/',
-                            type='bind'
+                            type='bind',
+                            read_only=True
                         ),
                         Mount(
                             source='/etc/ssl/certs/',
                             target='/etc/ssl/certs/',
-                            type='bind'
+                            type='bind',
+                            read_only=True
                         )
                 ]
         )
