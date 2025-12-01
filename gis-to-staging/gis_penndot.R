@@ -26,6 +26,8 @@ dept <- Sys.getenv("DEPT")
 update_col <- Sys.getenv("UPDATE_COL")
 int_col <- Sys.getenv("INT_COL")
 int_col <- unlist(strsplit(int_col, ","))
+num_col <- Sys.getenv("NUM_COL")
+num_col <- unlist(strsplit(num_col, ","))
 where_state <- Sys.getenv("WHERE_STATE")
 pretext <- Sys.getenv("PRETEXT","query?timeRelation=esriTimeRelationOverlaps&geometryType=esriGeometryEnvelope&spatialRel=esriSpatialRelIntersects&units=esriSRUnit_Foot&relationParam=&outFields=*&returnGeometry=true&returnTrueCurves=false&returnIdsOnly=false&returnCountOnly=false&returnZ=false&returnM=false&returnDistinctValues=false&returnExtentOnly=false&sqlFormat=none&featureEncoding=esriDefault&f=geojson&where=")
 
@@ -79,6 +81,11 @@ while ((nrow(temp) %% offset_orig) == 0) {
   if (length(int_col)>0) {
     temp2 <- temp2 %>% 
       mutate_at(vars(int_col), function(x) { as.integer(x)})
+  }
+  
+  if (length(num_col)>0) {
+    temp2 <- temp2 %>% 
+      mutate_at(vars(num_col), function(x) { as.numeric(x)})
   }
   
   temp <- temp2 %>%
