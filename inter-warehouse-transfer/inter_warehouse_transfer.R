@@ -34,13 +34,18 @@ tables <- unlist(strsplit(tables, ","))
 
 # Transfer each Table from Warehouse A to Warehouse B
 for (table in tables) {
-  table_name <- paste(schema, paste(dept, source, table, sep = "_"), sep = ".")
-  new_table <- paste(schema_b, paste(dept, source, table, sep = "_"), sep = ".")
+  if (wha_db == "Shiny") {
+    table_name <- table
+  } else {
+    table_name <- paste(dept, source, table, sep = "_")
+  }
   
-  temp <- dbReadTable(wha_con, SQL(table_name))
+  new_table <- paste(dept, source, table, sep = "_")
+  
+  temp <- dbReadTable(wha_con, Id(schema = schema , table = table_name))
   
   if (max_cols_load == "") { 
-    dbWriteTable(whb_con, SQL(new_table), temp, overwrite = TRUE)
+    dbWriteTable(whb_con, Id(schema = schema_b, table = new_table), temp, overwrite = TRUE)
   } else {
     if (any(max_cols %in% colnames(temp))) {
       # ID Max Cols for this table
@@ -56,9 +61,9 @@ for (table in tables) {
       temp <- select(temp, c(-all_of(cols), everything()))
       
       # Transfer Data to Warehouse
-      dbWriteTable(whb_con, SQL(new_table), temp, field.type = types, overwrite = TRUE)
+      dbWriteTable(whb_con, Id(schema = schema_b, table = new_table), temp, field.type = types, overwrite = TRUE)
     } else {
-      dbWriteTable(whb_con, SQL(new_table), temp, overwrite = TRUE)
+      dbWriteTable(whb_con, Id(schema = schema_b, table = new_table), temp, overwrite = TRUE)
     }
   }
   print(paste(table, "transferred"))
