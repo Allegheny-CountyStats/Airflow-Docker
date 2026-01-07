@@ -4,7 +4,7 @@ library(DBI)
 library(dplyr)
 library(stringi)
 library(tibble)
-
+library(bit64)
 
 # readRenviron("~/.Renviron")
 # dotenv:::load_dot_env()
@@ -38,13 +38,23 @@ wh_con <- dbConnect(odbc::odbc(), driver = "{ODBC Driver 17 for SQL Server}", se
 # Loop for multiple tables
 for (table in tables) {
   # Read Table from Warehouse
-  temp <- dbReadTable(wh_con, Id(schema = schema, table = table))
+  temp <- dbReadTable(wh_con, Id(schema = schema, table = table)) %>%
+    mutate_if(is.integer64, as.integer)
+  
+  #Rename for Oracle
+  oracle_table <- gsub("_V$|_C$|_G$", "", table)
   
   # Clean Col names for Oracle
   colnames(temp) <- gsub("\\.", "", colnames(temp))
+  
+  exists <- RJDBC::dbGetQuery(con, paste0("SELECT table_name FROM user_tables WHERE table_name = '", oracle_table, "'"))
+  
+  if (nrow(exists) > 0 ) {
+    RJDBC::dbSendUpdate(con, paste0("DROP TABLE ", username, '."', oracle_table, '"'))
+  }
 
   # Write Table to Oracle DB
-  dbWriteTable(con, Id(schema = username, table = gsub("_V$|_C$|_G$", "", table)), temp, overwrite = TRUE)
+  RJDBC::dbWriteTable(con, Id(schema = username, table = oracle_table), temp)
   
   gc()
 }
