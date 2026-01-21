@@ -8,6 +8,8 @@ import pandas as pd
 import os
 import sys
 from dotenv import load_dotenv
+import urllib3
+urllib3.disable_warnings()
 
 load_dotenv()
 
@@ -20,8 +22,8 @@ pd.set_option('display.max_colwidth', 1000)
 client_id = os.getenv("client_id")
 client_secret = os.getenv("client_secret")
 drive_type = 'sites' # drive for user (other for sharepoint sites)
-drive_name = 'Parks - CountyStat Data Exchange' # Use Sharepoint display name
-file_name = 'Park Rangers Programs Reporting Form Responses.xlsx'
+drive_name = 'IDE Data Warehouse'  # Use Sharepoint display name
+file_name = 'IDE quarterly kpis.xlsx'
 parsed_name = urllib.parse.quote(file_name)
 
 auth = HTTPBasicAuth(client_id, client_secret)

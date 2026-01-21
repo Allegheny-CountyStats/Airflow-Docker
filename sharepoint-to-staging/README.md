@@ -35,7 +35,7 @@ dept = 'Example_Dept'
 pull_motions = DockerOperator(
                 task_id='pull_motions',
                 image='countystats/sharepoint-to-staging:python',
-                api_version=Variable.get("docker_api_verion"),
+                api_version=Variable.get("docker_api_version"),
                 auto_remove='force',
                 environment={
                     'wh_host': wh_connection.host,
@@ -93,7 +93,7 @@ Needs the following command within the docker operator:
 upload_motions = DockerOperator(
                 task_id='upload_motions',
                 image='countystats/sharepoint-to-staging:1.0',
-                api_version=Variable.get("docker_api_verion"),
+                api_version=Variable.get("docker_api_version"),
                 auto_remove=True,
                 environment={
                     'client_id': Variable.get("o365_client_id"),
