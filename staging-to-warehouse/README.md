@@ -20,7 +20,7 @@ wh_connection = BaseHook.get_connection("data_warehouse")
 staging_to_warehouse = DockerOperator(
                 task_id='staging_to_warehouse',
                 image='countystats/staging-to-warehouse:r',
-                api_version='1.39',
+                api_version=Variable.get("docker_api_version"),
                 auto_remove='force',
                 environment={
                     'DEPT': 'Department_Name',
@@ -47,7 +47,7 @@ wh_connection = BaseHook.get_connection("data_warehouse")
 staging_to_warehouse = DockerOperator(
                 task_id='staging_to_warehouse',
                 image='countystats/staging-to-warehouse:r',
-                api_version='1.39',
+                api_version=Variable.get("docker_api_version"),
                 auto_remove='force',
                 environment={
                     'DEPT': 'Department_Name_and/or_Warehouse_Schema',
