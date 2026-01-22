@@ -110,3 +110,27 @@ tables = clean_list(tables_l)
             task_iterate = run_dag_task(tables_l)
             task_iterate
 ```
+
+### CountyStatAirflow Python Package
+[validates.py](../CountyStatAirflow/src/CountyStatAirflow/validates.py)
+
+Import the above python package; defaults to remote pool configuration. 
+
+```python
+from airflow.sdk.bases.hook import BaseHook
+from CountyStatAirflow.validates import data_validation
+
+wh_connection = BaseHook.get_connection("data_warehouse")
+record_tables = ['Comma Seperated List of Tables']
+dept = '' # Department
+source = '' # Source
+
+data_validtion_task = data_validation(
+  table_list=record_tables,
+  department_name=dept,
+  schema=source,
+  connection_name=wh_connection,
+  pool='Remote_Pool',
+  url_var='docker_remote')
+
+```
