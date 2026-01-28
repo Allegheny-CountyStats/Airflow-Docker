@@ -6,6 +6,7 @@ import sqlalchemy as sa
 from sodapy import Socrata
 from sqlalchemy import event
 from sqlalchemy.engine import URL
+from sqlalchemy import types
 
 # Env Variables
 # Data Vars
@@ -20,40 +21,54 @@ wh_host = os.getenv("wh_host")
 wh_db = os.getenv("wh_db")
 wh_un = os.getenv("wh_user")
 wh_pw = os.getenv("wh_pass")
+dev = os.getenv("DEV", "no")
 
 # Build Connection & Query Warehouse
-wh_conn_string = URL.create(
-                    "mssql+pyodbc",
-                    username=wh_un,
-                    password=wh_pw,
-                    host=wh_host,
-                    database=wh_db,
-                    query={
-                        "driver": "ODBC Driver 17 for SQL Server"
-                    },
-                )
+if dev == "YES":
+    wh_conn_string = URL.create(
+        "mssql+pyodbc",
+        username=wh_un,
+        password=wh_pw,
+        host=wh_host,
+        database=wh_db,
+        query={
+            "driver": "ODBC Driver 17 for SQL Server",
+            "trusted_connection": "yes"
+        },
+    )
+else:
+    wh_conn_string = URL.create(
+        "mssql+pyodbc",
+        username=wh_un,
+        password=wh_pw,
+        host=wh_host,
+        database=wh_db,
+        query={
+            "driver": "ODBC Driver 17 for SQL Server"
+        },
+    )
 engine = sa.create_engine(wh_conn_string)
 
 # Socrata Vars
 # Credentials
-socrata_token = os.getenv("SODAPY_APPTOKEN")
+socrata_token = os.getenv("sodapy_apptoken")
 # Identifier
 identifier = os.getenv("socrata_data_identifier")
 # Domain
 domain = os.getenv('domain')
 # Filter
-filter = os.getenv("filter")
+filter_con = os.getenv("filter")
 
 
 # Row Count
 def get_row_count(dom, conn):
     client = Socrata(dom, socrata_token)
     count_result = client.get(conn,
-                              where=filter,
+                              where=filter_con,
                               select="count('Business Name')")
     meta_amount = pd.DataFrame.from_dict(count_result)
-    row_count = int(meta_amount.iloc[0]['count_Business_Name'])
-    return row_count
+    row_count_result = int(meta_amount.iloc[0]['count_Business_Name'])
+    return row_count_result
 
 
 def pull_data(dom, conn, rowcount, condition=''):
@@ -75,22 +90,24 @@ def pull_data(dom, conn, rowcount, condition=''):
         for result in results:
             lst.append(result)
 
-    df = pd.DataFrame.from_dict(lst)
-    return df
+    # df_return = pd.DataFrame.from_dict(lst)
+    df_return = pd.DataFrame(lst)
+    return df_return
 
 
 def load(dfo, eng):
-    @event.listens_for(eng, "before_cursor_execute")
-    def receive_before_cursor_execute(conn, cursor, statement, params, context, exectuemany):
-        if exectuemany:
-            cursor.fast_executemany = True
-
-    if 'longitude' in dfo.columns:
-        dfo.to_sql(name=table_name, con=eng, index=False, if_exists="replace", schema=schema_t,
-                   dtype={'longitude': sa.types.Float(asdecimal=True),
-                          'latitude': sa.types.Float(asdecimal=True)})
-    else:
-        dfo.to_sql(name=table_name, con=eng, index=False, if_exists="replace", schema=schema_t)
+    sql = sa.text(
+        "SELECT COLUMN_NAME, DATA_TYPE "
+        "FROM INFORMATION_SCHEMA.COLUMNS "
+        "WHERE TABLE_NAME = 'Epidemiology_DOH_2025_Births' AND TABLE_SCHEMA = 'ACHD'"
+    )
+    with eng.begin() as conn:
+        result = conn.execute(sql).fetchall()
+    conn.close()
+    my_dict = dict(result)
+    new_mapping = {'varchar': types.VARCHAR(), 'bigint': types.BIGINT(), 'float': types.FLOAT(asdecimal=True)}
+    new_dict = {key: new_mapping.get(value, value) for key, value in my_dict.items()}
+    dfo.to_sql(name=table_name, con=eng, index=False, if_exists="replace", schema=schema_t, dtype=new_dict, chunksize=5000)
 
 
 def parse_coordinates(coord_col):
@@ -135,6 +152,6 @@ def convert_types(dfo):
 
 
 row_count = get_row_count(domain, identifier)
-df = pull_data(domain, identifier, row_count, filter)
+df = pull_data(domain, identifier, row_count, filter_con)
 df = convert_types(df)
 load(df, eng=engine)
