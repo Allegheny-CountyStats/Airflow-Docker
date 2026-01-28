@@ -105,9 +105,11 @@ def load(dfo, eng):
         result = conn.execute(sql).fetchall()
     conn.close()
     my_dict = dict(result)
-    new_mapping = {'varchar': types.VARCHAR(), 'bigint': types.BIGINT(), 'float': types.FLOAT(asdecimal=True)}
-    new_dict = {key: new_mapping.get(value, value) for key, value in my_dict.items()}
-    dfo.to_sql(name=table_name, con=eng, index=False, if_exists="replace", schema=schema_t, dtype=new_dict, chunksize=5000)
+    new_mapping = {
+        'longitude': sa.types.Float(asdecimal=True),
+        'latitude': sa.types.Float(asdecimal=True)
+    }
+    dfo.to_sql(name=table_name, con=eng, index=False, if_exists="replace", schema=schema_t, dtype=new_mapping, chunksize=5000)
 
 
 def parse_coordinates(coord_col):
