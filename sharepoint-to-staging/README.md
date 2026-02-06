@@ -108,11 +108,6 @@ upload_motions = DockerOperator(
                 command= 'python3 sharepoint_upload.py',
                 mounts=[
                         Mount(
-                                source='/media/CountyExecutive',
-                                target='/CountyExec',
-                                type='bind'
-                            ),
-                        Mount(
                             source='/usr/local/share/ca-certificates/',
                             target='/usr/local/share/ca-certificates/',
                             type='bind',
