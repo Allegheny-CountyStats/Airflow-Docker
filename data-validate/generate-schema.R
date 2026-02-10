@@ -1,6 +1,7 @@
 require(DBI)
 require(dplyr)
 require(jsonlite)
+require(httr)
 
 dotenv::load_dot_env()
 
@@ -47,4 +48,55 @@ print(schema_name)
 
 # Verify the file
 file.edit(filename)
+
+# Airflow
+airflow_user <- Sys.getenv('AIRFLOW_USER')
+airflow_password <- Sys.getenv('AIRFLOW_PASSWORD')
+
+if(airflow_user != ""){
+  #To Dev
+  json_body <- jsonlite::toJSON(list(username = airflow_user, password = airflow_password), auto_unbox = TRUE)
+  response <- httr::POST(
+    "https://devairflow.alleghenycounty.us:8080/auth/token",
+    httr::add_headers(
+      "Content-Type" = "application/json"
+    ),
+    body = json_body, encode = "raw"
+    )
+  stop_for_status(response)
+  raise <- suppressMessages(httr::content(response, "text"))
+  api_token <- jsonlite::fromJSON(raise)
+  
+  json_body <- jsonlite::toJSON(list(key = schema_name, value = preload), auto_unbox = TRUE)
+  response <- httr::POST(
+    "https://devairflow.alleghenycounty.us:8080/api/v2/variables",
+    httr::add_headers(
+      "Content-Type" = "application/json",
+      "Authorization" = paste0("Bearer ", api_token$access_token)
+    ),
+    body = json_body, encode = "raw")
+  stop_for_status(response)
+  #To Prod
+  json_body <- jsonlite::toJSON(list(username = airflow_user, password = airflow_password), auto_unbox = TRUE)
+  response <- httr::POST(
+    "https://airflow.alleghenycounty.us:8080/auth/token",
+    httr::add_headers(
+      "Content-Type" = "application/json"
+    ),
+    body = json_body, encode = "raw"
+  )
+  stop_for_status(response)
+  raise <- suppressMessages(httr::content(response, "text"))
+  api_token <- jsonlite::fromJSON(raise)
+  
+  json_body <- jsonlite::toJSON(list(key = schema_name, value = preload), auto_unbox = TRUE)
+  response <- httr::POST(
+    "https://airflow.alleghenycounty.us:8080/api/v2/variables",
+    httr::add_headers(
+      "Content-Type" = "application/json",
+      "Authorization" = paste0("Bearer ", api_token$access_token)
+    ),
+    body = json_body, encode = "raw")
+  stop_for_status(response)
+}
 
