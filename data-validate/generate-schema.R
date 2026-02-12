@@ -67,7 +67,7 @@ if(airflow_user != ""){
   raise <- suppressMessages(httr::content(response, "text"))
   api_token <- jsonlite::fromJSON(raise)
   
-  json_body <- jsonlite::toJSON(list(key = schema_name, value = preload), auto_unbox = TRUE)
+  json_body <- jsonlite::toJSON(list(key = schema_name, value = jsonlite::toJSON(preload)), auto_unbox = TRUE)
   response <- httr::POST(
     "https://devairflow.alleghenycounty.us:8080/api/v2/variables",
     httr::add_headers(
@@ -76,6 +76,7 @@ if(airflow_user != ""){
     ),
     body = json_body, encode = "raw")
   stop_for_status(response)
+  
   #To Prod
   json_body <- jsonlite::toJSON(list(username = airflow_user, password = airflow_password), auto_unbox = TRUE)
   response <- httr::POST(
@@ -89,7 +90,7 @@ if(airflow_user != ""){
   raise <- suppressMessages(httr::content(response, "text"))
   api_token <- jsonlite::fromJSON(raise)
   
-  json_body <- jsonlite::toJSON(list(key = schema_name, value = preload), auto_unbox = TRUE)
+  json_body <- jsonlite::toJSON(list(key = schema_name, value = jsonlite::toJSON(preload)), auto_unbox = TRUE)
   response <- httr::POST(
     "https://airflow.alleghenycounty.us:8080/api/v2/variables",
     httr::add_headers(
