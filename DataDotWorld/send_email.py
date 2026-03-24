@@ -11,7 +11,7 @@ import os
 
 
 def send_email(subject, to_emails, message, attachment):
-    s = smtplib.SMTP(host='mailrelay.allegheny.local', port=25)
+    s = smtplib.SMTP(host=os.getenv('mail_host'), port=25)
     msg = MIMEMultipart()
     msg['From'] = 'CountyStat@alleghenycounty.us'
     msg['To'] = to_emails
