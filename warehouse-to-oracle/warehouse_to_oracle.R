@@ -4,28 +4,27 @@ library(DBI)
 library(dplyr)
 library(stringi)
 library(tibble)
-library(lubridate)
+library(bit64)
 
+# readRenviron("~/.Renviron")
 # dotenv:::load_dot_env()
+
+options(java.parameters = "-Xmx8000m")
 
 username <- Sys.getenv('USER')
 password <- Sys.getenv('PASS')
 host <- Sys.getenv('HOST')
 port <- Sys.getenv('PORT', unset = 1521)
 database <- Sys.getenv('DATABASE')
-schema <- Sys.getenv("SCHEMA")
+
+schema <- Sys.getenv("WH_SCHEMA", unset = "Reporting")
+tables <- Sys.getenv('TABLES') # List/Dict
+tables <- unlist(strsplit(tables, ","))
 
 wh_host <- Sys.getenv('WH_HOST')
 wh_db <- Sys.getenv('WH_DB')
 wh_user <- Sys.getenv('WH_USER')
 wh_pass <- Sys.getenv('WH_PASS')
-
-wh_schema <- Sys.getenv("WH_SCHEMA", unset = "Reporting")
-
-dept <- Sys.getenv("DEPT")
-source <- Sys.getenv("SOURCE")
-tables <- Sys.getenv('TABLES') # List/Dict
-tables <- unlist(strsplit(tables, ","))
 
 # Build the driver using JDBC
 jdbcDriver <- JDBC(driverClass="oracle.jdbc.OracleDriver", classPath="/lib/ojdbc6.jar")
@@ -34,27 +33,32 @@ jdbcDriver <- JDBC(driverClass="oracle.jdbc.OracleDriver", classPath="/lib/ojdbc
 con <- dbConnect(jdbcDriver, paste0("jdbc:oracle:thin:@//", host, ":", port, "/", database), username, password)
 # DB Connection String
 wh_con <- dbConnect(odbc::odbc(), driver = "{ODBC Driver 17 for SQL Server}", server = wh_host, database = wh_db, UID = wh_user, pwd = wh_pass)
+# wh_con <- dbConnect(odbc::odbc(), driver = "{ODBC Driver 17 for SQL Server}", server = wh_host, database = wh_db, Trusted_Connection = 'yes')
 
+# Loop for multiple tables
 for (table in tables) {
-  table_full <- paste0(wh_schema, ".", dept, "_", source, "_", table)
-  target_table <- paste0(username, ".", toupper(table))
+  # Read Table from Warehouse
+  temp <- dbReadTable(wh_con, Id(schema = schema, table = table)) %>%
+    mutate_if(is.integer64, as.integer)
   
-  temp <- dbReadTable(wh_con, SQL(table_full))
+  #Rename for Oracle
+  oracle_table <- gsub("_V$|_C$|_G$", "", table)
   
   # Clean Col names for Oracle
-  colnames(temp) <- toupper(colnames(temp))
   colnames(temp) <- gsub("\\.", "", colnames(temp))
   
-  print(colnames(temp))
-  print(target_table)
+  exists <- RJDBC::dbGetQuery(con, paste0("SELECT table_name FROM user_tables WHERE table_name = '", oracle_table, "'"))
   
-  tabs <- dbGetQuery(con, 'SELECT * FROM USER_TABLES')
-  if (toupper(table) %in% tabs$TABLE_NAME) {
-    dbRemoveTable(con, SQL(target_table))
+  if (nrow(exists) > 0 ) {
+    RJDBC::dbSendUpdate(con, paste0("DROP TABLE ", username, '."', oracle_table, '"'))
   }
+
+  # Write Table to Oracle DB
+  RJDBC::dbWriteTable(con, Id(schema = username, table = oracle_table), temp)
   
-  dbWriteTable(con, name = SQL(target_table), temp, rownames=FALSE)
+  gc()
 }
 
-dbDisconnect(con)
+# Disconnect from DBs
 dbDisconnect(wh_con)
+dbDisconnect(con)

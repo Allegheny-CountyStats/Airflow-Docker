@@ -1,6 +1,10 @@
-from countystats/r-basic:1.2
+FROM countystats/r-basic:4.3
 
-MAINTAINER Geoffrey Arnold "geoffrey.arnold@alleghenycounty.us"
+LABEL maintainer="Geoffrey Arnold <geoffrey.arnold@alleghenycounty.us>"
+
+RUN install2.r --error \
+    RJDBC \
+    DBI
 
 COPY warehouse_to_oracle.R /
 

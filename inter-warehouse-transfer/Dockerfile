@@ -1,9 +1,6 @@
-from countystats/r-basic:4.3
+FROM countystats/r-basic:4.3
 
-MAINTAINER Geoffrey Arnold "geoffrey.arnold@alleghenycounty.us"
-
-RUN install2.r --error \
-    dplyr
+LABEL maintainer=" Geoffrey Arnold <geoffrey.arnold@alleghenycounty.us>"
 
 ADD inter_warehouse_transfer.R /
 
