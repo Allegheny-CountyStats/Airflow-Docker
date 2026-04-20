@@ -38,3 +38,4 @@ render-quarto/CountyStatKPI_1.0.7.tar.gz
 render-quarto/quarto-1.6.40-linux-amd64.deb
 render-quarto/CountyStatKPI-1.0.8.tar.gz
 *.pypirc
+*.hyper
