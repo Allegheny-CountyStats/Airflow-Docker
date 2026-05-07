@@ -8,9 +8,6 @@ library(tibble)
 # dotenv::load_dot_env()
 options(odbc.batch_rows = 1024)
 
-# Initiate Kerberos if necessary
-system('klist -s || kinit sa00427@COUNTY.ALLEGHENY.LOCAL -k -t Kerberos/sa00427.keytab')
-
 host <- Sys.getenv('HOST')
 database <- Sys.getenv('DATABASE')
 sql <- Sys.getenv('SQL')
