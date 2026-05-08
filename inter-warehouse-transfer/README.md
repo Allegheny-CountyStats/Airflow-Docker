@@ -19,6 +19,7 @@ Image Name: `countystats/inter-warehouse-transfer:r`
 * WHB_DB: Warehouse B Connection value*
 * WHB_UN: Warehouse B Connection value*
 * WHB_PW: Warehouse B Connection value*
+* WHB_SUFFIX: If specified, appends a suffix on to target table name (1.0 version/tag only)*
   
 (*) Required variable
 
