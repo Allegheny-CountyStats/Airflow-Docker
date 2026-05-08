@@ -24,6 +24,7 @@ whb_host <- Sys.getenv('WHB_HOST')
 whb_db <- Sys.getenv('WHB_DB')
 whb_user <- Sys.getenv('WHB_USER')
 whb_pass <- Sys.getenv('WHB_PASS')
+suffix_name <- Sys.getenv('WHB_SUFFIX', NA)
 
 # Connection to Warehouses
 wha_con <- dbConnect(odbc::odbc(), driver = "{ODBC Driver 17 for SQL Server}", server = wha_host, database = wha_db, UID = wha_user, pwd = wha_pass)
@@ -40,7 +41,11 @@ for (table in tables) {
     table_name <- paste(dept, source, table, sep = "_")
   }
   
-  new_table <- paste(dept, source, table, sep = "_")
+  if(!is.na(suffix_name)){
+    new_table <- paste(dept, source, table, suffix_name, sep = "_")
+  }else{
+    new_table <- paste(dept, source, table, sep = "_")
+  }
   
   temp <- dbReadTable(wha_con, Id(schema = schema , table = table_name))
   
