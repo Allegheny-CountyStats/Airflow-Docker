@@ -42,8 +42,8 @@ Container used to import data from PostgreSQL to CountyStat warhoue
 postgres_import = DockerOperator(
                 task_id='postgres_import',
                 image='countystats/postgres-to-warehouse:1.0',
-                api_version='1.39',
-                auto_remove=True,
+                api_version=Variable.get("docker_api_version"),
+                auto_remove='force',
                 environment={
                     'DEPT': 'Department_Name_and/or_Warehouse_Schema',
                     'TABLES': 'Name,Of,Tables,Comma,Separated',
