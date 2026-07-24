@@ -53,6 +53,9 @@ message_filter = os.getenv('message_filter')
 sort_by = os.getenv('sort_by', None)
 top_num = os.getenv('top_by', None)
 message_id = os.getenv('message_id', None)
+attachment_id = os.getenv('attachment_id', '')
+if attachment_id != '':
+    attachment_id = "/" + attachment_id
 
 
 # Snakecase function
@@ -135,11 +138,19 @@ if message_id is None:
     messages = get_request(url, headers)
     message_id = messages.get("value").__getitem__(0).get("id")
 
-att_url = "https://graph.microsoft.com/v1.0/users/CountyStat@alleghenycounty.us/mailFolders/{}/messages/{}/attachments".format(inbox_name, message_id)
+att_url = (
+    "https://graph.microsoft.com/v1.0/users/CountyStat@alleghenycounty.us/"
+    "mailFolders/{}/messages/{}/attachments{}"
+).format(inbox_name, message_id, attachment_id)
 attachment = get_request(att_url, headers)
 
-att_raw_url = "{}/{}/$value".format(att_url, attachment.get("value").__getitem__(0).get("id"))
-attachment_raw = requests.request("GET", att_raw_url, data="", headers=headers)
+if attachment_id == '':
+    att_raw_url = "{}/{}/$value".format(att_url, attachment.get("value").__getitem__(0).get("id"))
+    attachment_raw = requests.request("GET", att_raw_url, data="", headers=headers)
+else:
+    att_raw_url = "{}/$value".format(att_url)
+    attachment_raw = requests.request("GET", att_raw_url, data="", headers=headers)
+
 filetype_list = ['csv', 'text']
 
 if filetype == 'csv':
