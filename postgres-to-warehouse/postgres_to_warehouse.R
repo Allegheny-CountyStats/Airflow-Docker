@@ -3,13 +3,14 @@ require(tidyverse)
 require(RPostgres)
 require(odbc)
 
-# dotenv::load_dot_env()
+# dotenv::load_dot_env("postgres-to-warehouse/.env")
 options(odbc.batch_rows = 1024)
 
 # Warehouse variables
 schema <- Sys.getenv('SCHEMA', 'dbo')
 
 dept <- Sys.getenv("DEPT")
+source <- Sys.getenv("SOURCE", Sys.getenv("PG_DB"))
 tables <- Sys.getenv('TABLES') # List/Dict
 
 dev <- Sys.getenv('DEV')
@@ -70,7 +71,7 @@ for (tablet in tables) {
     query <- paste0("SELECT * FROM ", database, ".", schema, ".", tablet)
   }
   
-  master_table <- paste0("Master.", paste(dept, database, tablet, sep = "_"))
+  master_table <- paste0("Master.", paste(dept, source, tablet, sep = "_"))
   
   # Append Value and Query
   if (append_col != '' && dbExistsTable(wh_con, SQL(master_table))) { 
@@ -93,7 +94,7 @@ for (tablet in tables) {
     table_nx <- tablet
   }
   
-  table_name <- DBI::Id(catalog = wh_db, schema = wh_schema, table = paste(dept, database, table_nx, sep = "_"))
+  table_name <- DBI::Id(catalog = wh_db, schema = wh_schema, table = paste(dept, source, table_nx, sep = "_"))
   
   if (max_cols_load == "") { 
     dbWriteTable(wh_con, table_name, temp, overwrite = TRUE)

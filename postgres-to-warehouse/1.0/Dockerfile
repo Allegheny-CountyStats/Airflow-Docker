@@ -1,11 +1,10 @@
-from countystats/r-basic:4.2
+FROM countystats/r-basic:4.2
 
 RUN install2.r --error \
-   	tidyverse \
-	DBI \
-	RPostgres
+   	DBI \
+	  RPostgres
 
-MAINTAINER Daniel Andrus "daniel.andrus@alleghenycounty.us"
+LABEL maintainer="Daniel Andrus daniel.andrus@alleghenycounty.us"
 
 COPY postgres_to_warehouse.R /
 CMD ["Rscript", "postgres_to_warehouse.R"]
