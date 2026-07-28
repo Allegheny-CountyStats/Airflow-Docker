@@ -111,14 +111,14 @@ tables = clean_list(tables_l)
             task_iterate
 ```
 
-### CountyStatAirflow Python Package
-[validates.py](../CountyStatAirflow/src/CountyStatAirflow/validates.py)
+### PanDAirflow Python Package
+[validates.py](../PanDAirflow/src/PanDAirflow/validates.py)
 
 Import the above python package; defaults to remote pool configuration. 
 
 ```python
 from airflow.sdk.bases.hook import BaseHook
-from CountyStatAirflow.validates import data_validation
+from PanDAirflow.validates import data_validation
 
 wh_connection = BaseHook.get_connection("data_warehouse")
 record_tables = ['Comma Seperated List of Tables']
