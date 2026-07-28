@@ -130,7 +130,7 @@ data_validtion_task = data_validation(
   department_name=dept,
   schema=source,
   connection_name=wh_connection,
-  pool='Remote_Pool',
+  pool=Variable.get("warehouse_write_pool"),
   url_var='docker_remote')
 
 ```
