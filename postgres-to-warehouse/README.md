@@ -56,6 +56,7 @@ postgres_import = DockerOperator(
                     'WH_DB': wh_connection.schema,
                     'WH_USER': wh_connection.login,
                     'WH_PASS': wh_connection.password
+                    'SOURCE': "Desired sorce name, or leave bank to use the PG_DB name"
                 },
                 docker_url='unix://var/run/docker.sock',
                 network_mode="bridge"
