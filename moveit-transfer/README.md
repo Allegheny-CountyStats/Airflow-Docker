@@ -56,8 +56,8 @@ moveit_folder = 'Some Folder'
 mi_device = DockerOperator(
                 task_id='mi_device',
                 image='countystats/moveit-transfer:2.0',
-                api_version='1.39',
-                auto_remove=True,
+                api_version=Variable.get("docker_api_version"),
+                auto_remove='force',
                 environment={
                     'DEPT': dept,
                     'TABLE': 'Some_Table',
@@ -80,8 +80,8 @@ mi_device = DockerOperator(
 mi_device = DockerOperator(
                 task_id='mi_device',
                 image='countystats/moveit-transfer:r',
-                api_version='1.39',
-                auto_remove=True,
+                api_version=Variable.get("docker_api_version"),
+                auto_remove='force',
                 environment={
                     'DEPT': dept,
                     'TABLE': 'Some_Table',
@@ -110,8 +110,8 @@ source = 'Some Source'
 pull_example = DockerOperator(
                 task_id='pull_example',
                 image='countystats/moveit-transfer:r',
-                api_version='1.39',
-                auto_remove=True,
+                api_version=Variable.get("docker_api_version"),
+                auto_remove='force',
                 environment={
                     'DEPT': dept,
                     'MI_USER': Variable.get('moveit_username'),
