@@ -29,23 +29,14 @@ for (table in tables) {
   table_name <-  paste(dept, source, table, sep = "_")
   prel_table <- paste0("Staging.", table_name)
   new_table <- paste0(target_schema, ".", paste(dept, source, table, sep = "_"))
-  
-  join <- "ON"
-  for (id_col in id_cols) {
-    if (join == "ON") {
-      join <- paste0(join ," m.", id_col," = s.", id_col)
-    } else {
-      join <- paste0(join ," AND m.", id_col," = s.", id_col)
-    }
-  }
-  
+
   # Skip if No Table to Append with
   if(dbExistsTable(wh_con, SQL(new_table))) {
     # Delete rows
     sql_insert <- paste0("
     DELETE m
     FROM ", new_table, " m
-    INNER JOIN ", prel_table, " s ", join, ";")
+    INNER JOIN ", prel_table, " s ON m.", id_col," = s.", id_col, ";")
     x <- dbExecute(wh_con, sql_insert)
     print(paste0(x, " rows matched with ", prel_table," and then deleted from ", new_table))
     
