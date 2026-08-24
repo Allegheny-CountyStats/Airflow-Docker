@@ -10,6 +10,13 @@ Image name: `countystats/staging-to-warehouse:r`
 * Replace/Append Command: `Rscript staging_replace_warehouse.R`
   * Can specify which tables must produce new rows with 'REQ_TABLES' variable
 
+Tags:
+- r
+- health
+- calc_col
+- 2.0
+
+
 ## Example Dag Usages:
 
 #### Overwrite Example:

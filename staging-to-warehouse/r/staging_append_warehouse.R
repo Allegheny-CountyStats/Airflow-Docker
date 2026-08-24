@@ -23,7 +23,7 @@ for (table in tables) {
   # Get Preload Table
   table_name <-  paste(dept, source, table, sep = "_")
   prel_table <- paste0("Staging.", table_name)
-  new_table <- paste0(target_schema, ".", paste(dept, source, table, sep = "_"))
+  new_table <- paste0(target_schema, "", paste(dept, source, table, sep = "_"))
   
   if (dbExistsTable(wh_con, SQL(new_table))) {
     cols <- paste0("SELECT COLUMN_NAME

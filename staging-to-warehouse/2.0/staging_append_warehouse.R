@@ -23,14 +23,12 @@ for (table in tables) {
   # Get Preload Table
   table_name <-  paste(dept, source, table, sep = "_")
   prel_table <- paste0("Staging.", table_name)
-  new_table <- paste0(target_schema, ".", paste(dept, source, table, sep = "_"))
+  new_table <- paste0(target_schema, "", paste(dept, source, table, sep = "_"))
   
-  if (dbExistsTable(wh_con, DBI::Id(schema = target_schema, table = paste(dept, source, table, sep = "_")))) {
+  if (dbExistsTable(wh_con, SQL(new_table))) {
     cols <- paste0("SELECT COLUMN_NAME
   FROM INFORMATION_SCHEMA.COLUMNS
-  WHERE TABLE_NAME = '", table_name, "' AND TABLE_SCHEMA = 'Staging'
-  ORDER BY ORDINAL_POSITION 
-                   ")
+  WHERE TABLE_NAME = '", table_name, "' AND TABLE_SCHEMA = 'Staging'")
     col_names <- dbGetQuery(wh_con, cols)$COLUMN_NAME %>%
       paste(collapse = "], [")
     

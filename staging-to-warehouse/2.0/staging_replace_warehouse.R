@@ -28,10 +28,10 @@ for (table in tables) {
   # Get Preload Table
   table_name <-  paste(dept, source, table, sep = "_")
   prel_table <- paste0("Staging.", table_name)
-  new_table <- paste0(target_schema, ".", paste(dept, source, table, sep = "_"))
-  
+  new_table <- paste0(target_schema, "", paste(dept, source, table, sep = "_"))
+
   # Skip if No Table to Append with
-  if(dbExistsTable(wh_con, DBI::Id(schema = target_schema, table = paste(dept, source, table, sep = "_")))) {
+  if(dbExistsTable(wh_con, SQL(new_table))) {
     # Delete rows
     sql_insert <- paste0("
     DELETE m
@@ -44,12 +44,14 @@ for (table in tables) {
     cols <- paste0("SELECT COLUMN_NAME
 FROM INFORMATION_SCHEMA.COLUMNS
 WHERE TABLE_NAME = '", table_name, "' AND TABLE_SCHEMA = 'Staging'")
-    col_names <- dbGetQuery(wh_con, cols)$COLUMN_NAME %>%
-      paste(collapse = "], [")
+    cn <- dbGetQuery(wh_con, cols)$COLUMN_NAME
+    col_names <- paste0("[", cn, "]", collapse = ", ")
     
-    # Append to Master Table 
-    sql_insert <- paste0("WITH NewData AS (SELECT * FROM ", prel_table, ")
-                        INSERT INTO ", new_table, " ([", col_names, "]) SELECT * FROM NewData;")
+    sql_insert <- paste0(
+      "WITH NewData AS (SELECT ", col_names, " FROM ", prel_table, ")
+   INSERT INTO ", new_table, " (", col_names, ")
+   SELECT ", col_names, " FROM NewData;"
+    )
     y <- dbExecute(wh_con, sql_insert)
     
     if(y-x < 0){
