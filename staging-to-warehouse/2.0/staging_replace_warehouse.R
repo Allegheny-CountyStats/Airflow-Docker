@@ -13,7 +13,7 @@ req_tables <- unlist(strsplit(req_tables, ","))
 
 target_schema <- Sys.getenv('TARGET_SCHEMA', "Master")
 
-id_col <- Sys.getenv("ID_COL")
+id_cols <- Sys.getenv("ID_COL")
 source <- Sys.getenv('SOURCE')
 
 wh_host <- Sys.getenv('WH_HOST')
@@ -53,12 +53,15 @@ for (table in tables) {
     cols <- paste0("SELECT COLUMN_NAME
 FROM INFORMATION_SCHEMA.COLUMNS
 WHERE TABLE_NAME = '", table_name, "' AND TABLE_SCHEMA = 'Staging'")
-    col_names <- dbGetQuery(wh_con, cols)$COLUMN_NAME %>%
-      paste(collapse = "], [")
+    cn <- dbGetQuery(wh_con, cols)$COLUMN_NAME
+    col_names <- paste0("[", cn, "]", collapse = ", ")
     
     # Append to Master Table
-    sql_insert <- paste0("WITH NewData AS (SELECT * FROM ", prel_table, ")
-                        INSERT INTO ", new_table, " ([", col_names, "]) SELECT * FROM NewData;")
+    sql_insert <- paste0(
+      "WITH NewData AS (SELECT ", col_names, " FROM ", prel_table, ")
+       INSERT INTO ", new_table, " (", col_names, ")
+       SELECT ", col_names, " FROM NewData;"
+    )
     y <- dbExecute(wh_con, sql_insert)
     
     if(y-x < 0){
