@@ -13,7 +13,9 @@ req_tables <- unlist(strsplit(req_tables, ","))
 
 target_schema <- Sys.getenv('TARGET_SCHEMA', "Master")
 
-id_cols <- Sys.getenv("ID_COL")
+id_cols <- Sys.getenv("ID_COLS")
+id_cols <- unlist(strsplit(id_cols, ","))
+
 source <- Sys.getenv('SOURCE')
 
 wh_host <- Sys.getenv('WH_HOST')
