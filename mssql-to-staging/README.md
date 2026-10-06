@@ -35,8 +35,8 @@ wh_connection = BaseHook.get_connection("data_warehouse")
 table_pull = DockerOperator(
                 task_id='table_pull',
                 image='countystats/mssql-to-staging:r',
-                api_version='1.39',
-                auto_remove=True,
+                api_version=Variable.get("docker_api_version"),
+                auto_remove="force",
                 environment={
                     'DEPT': 'Department_Name_and/or_Warehouse_Schema',
                     'TABLES': 'Name,Of,Tables,Comma,Separated',
