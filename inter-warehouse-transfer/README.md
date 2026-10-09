@@ -19,7 +19,13 @@ Image Name: `countystats/inter-warehouse-transfer:r`
 * WHB_DB: Warehouse B Connection value*
 * WHB_UN: Warehouse B Connection value*
 * WHB_PW: Warehouse B Connection value*
-* WHB_SUFFIX: If specified, appends a suffix on to target table name (1.0 version/tag only)*
+* WHB_SUFFIX: If specified, appends a suffix on to target table name (1.0 and later tags only)
+* WHA_TRUSTED / WHB_TRUSTED: `Yes` connects to that warehouse with a trusted (Kerberos) connection instead of UN/PW (1.1 tag only)
+  * Default: No
+  * Requires mounting the Airflow Kerberos ticket cache: `Mount(source='/tmp/airflow_krb5_ccache', target='/tmp/krb5cc_0', type='bind', read_only=True)`
+* WHB_SQL_BEFORE: SQL run on Warehouse B before any transfer (1.1 tag only)
+* WHB_QUERY: Query run on Warehouse B after the transfer; its first row is printed as the final log line, which the DockerOperator pushes to XCom (1.1 tag only)
+  * TABLES may be left empty with 1.1 to only run WHB_SQL_BEFORE / WHB_QUERY; Warehouse A variables are then not needed
   
 (*) Required variable
 
@@ -51,5 +57,33 @@ transfer_geo = DockerOperator(
         docker_url='unix://var/run/docker.sock',
         network_mode="bridge"
 
+    )
+```
+
+## Trusted Connection Example (1.1)
+```
+transfer_gis = DockerOperator(
+        task_id='transfer_gis',
+        image='countystats/inter-warehouse-transfer:1.1',
+        api_version=Variable.get("docker_api_version"),
+        auto_remove='force',
+        environment={
+            'DEPT': dept,
+            'SOURCE': source,
+            'TABLES': 'GisPollingPlaces',
+            'SCHEMA': 'Staging',
+            'SCHEMA_B': 'dbo',
+            'WHB_SUFFIX': 'stage',
+            'WHA_HOST': wh_connection.host,
+            'WHA_DB': wh_connection.schema,
+            'WHA_USER': wh_connection.login,
+            'WHA_PASS': wh_connection.password,
+            'WHB_HOST': gis_connection.host,
+            'WHB_DB': gis_connection.schema,
+            'WHB_TRUSTED': 'Yes'
+        },
+        mounts=[Mount(source='/tmp/airflow_krb5_ccache', target='/tmp/krb5cc_0', type='bind', read_only=True)],
+        docker_url='unix://var/run/docker.sock',
+        network_mode="bridge"
     )
 ```
