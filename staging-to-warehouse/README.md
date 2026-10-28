@@ -15,6 +15,14 @@ Tags:
 - health
 - calc_col
 - 2.0
+- 2.1
+
+### 2.1: safe replace
+`staging_replace_warehouse.R` in the `2.1` tag won't leave Master missing rows when the insert fails:
+* Before deleting anything, it compares every char/varchar/nchar/nvarchar column that Staging declares wider than Master against Master's limit. If any Staging value is too long, the task stops and lists each column, the Master limit, the longest Staging value and how many rows are over. Nothing is deleted.
+* For each table, the delete and the insert run in a single transaction. If the insert fails for any reason, the delete is rolled back, Master stays unchanged and the Staging table is kept, so you can re-run.
+* Staging tables are dropped only after every table succeeds.
+* Takes `ID_COLS` (comma separated, for joining on more than one column). Falls back to `ID_COL` if `ID_COLS` isn't set, so DAGs on the `r`/`health` tags can switch by changing only the image tag. `CALC_UID` from `calc_col` isn't supported.
 
 
 ## Example Dag Usages:
