@@ -22,13 +22,7 @@ wh_pass <- Sys.getenv('WH_PASS', sa_pass)
 
 sql <- Sys.getenv('SQL')
 
-# csv (default) or xlsx
-file_type <- tolower(Sys.getenv("FILE_TYPE", unset = "csv"))
-if (!file_type %in% c("csv", "xlsx")) {
-  stop("FILE_TYPE must be csv or xlsx")
-}
-
-filename <- Sys.getenv("FILENAME", unset = paste0(tolower(table), ".", file_type))
+filename <- Sys.getenv("FILENAME", unset = paste0(tolower(table), ".csv"))
 folder <- Sys.getenv("FOLDER")
 folder_path <- paste0(Sys.getenv("FOLDER_PATH"), folder)
 
@@ -39,7 +33,7 @@ blank_na <- Sys.getenv("BLANK_NA", unset = "FALSE")
 
 snake_case <- Sys.getenv("SNAKE_CASE", unset = "FALSE")
 
-moveit_url <- Sys.getenv("BASE_URL", unset = "alleghenycounty.us")
+moveit_url <- "alleghenycounty.us"
 
 # Auth MoveIt API
 auth <- paste0("grant_type=password&username=", user, "&password=", pass)
@@ -81,19 +75,12 @@ if (snake_case == "TRUE") {
   colnames(temp) <- to_snake_case(colnames(temp))
 }
 
-# Write file for upload
-if (file_type == "xlsx") {
-  # writexl always writes NA as a blank cell and has no row names
-  writexl::write_xlsx(temp, filename)
-  content_type <- "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
+# Write to csv for upload
+if (blank_na == "TRUE") {
+  write.csv(temp, filename, row.names = rownames, na = "")
 } else {
-  if (blank_na == "TRUE") {
-    write.csv(temp, filename, row.names = rownames, na = "")
-  } else {
-    write.csv(temp, filename, row.names = rownames)
-  }
-  content_type <- "text/csv"
+  write.csv(temp, filename, row.names = rownames)
 }
 
 # Upload to MoveIt
-uploadMoveItFile(moveit_url, tokens, id, filename, content_type)
+uploadMoveItFile(moveit_url, tokens, id, filename, "text/csv")
