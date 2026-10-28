@@ -4,7 +4,7 @@ Provide a tables in the Datawarehouse to transfer to the County's Move It SFTP s
 
 The command argument for this file is different defending on the action you are taking. For Uploads use: `Rscript moveit-transfer.R` for downloads use: `Rscript moveit-download.R`
 
-Image Name: `countystats/moveit-transfer:2.0` or `countystats/moveit-transfer:r` or `countystats/moveit-transfer:3.0`
+Image Name: `countystats/moveit-transfer:2.0` or `countystats/moveit-transfer:r` or `countystats/moveit-transfer:3.0` or `countystats/moveit-transfer:3.1`
 
 ## Enviornmental Variables:
 
@@ -12,10 +12,13 @@ Image Name: `countystats/moveit-transfer:2.0` or `countystats/moveit-transfer:r`
 * TABLE: Table name for transfer to/from in Datawarehouse*
 * FILENAME: 
   * transfer: File name to upload to move it server
-    * Default: Table name ending with `.csv`
+    * Default: Table name ending with `.csv` (`.xlsx` when `FILE_TYPE=xlsx`)
   * download: File name to download off the move it server§
 * FILE_ID: 
   * download: ID of the file on the move it server
+* FILE_TYPE: Only available in version `3.1`
+  * upload: `csv` or `xlsx` (written with `writexl`; `ROWNAMES` is ignored and NA is always blank)
+  * Default: `csv`
 * FOLDER: Folder to upload the file to†
 * FOLDER_PATH: For instances of a folder existing in multiple locations users. Only available in version `2.0`
 * ROWNAMES: 
