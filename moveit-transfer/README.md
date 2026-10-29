@@ -16,7 +16,7 @@ Image Name: `countystats/moveit-transfer:2.0` or `countystats/moveit-transfer:r`
   * download: File name to download off the move it server§
 * FILE_ID: 
   * download: ID of the file on the move it server
-* FILE_TYPE: Only available in version `3.1`
+* FILE_TYPE: Only available in version `3.2`
   * upload: `csv` or `xlsx` (written with `writexl`; `ROWNAMES` is ignored and NA is always blank)
   * Default: `csv`
 * FOLDER: Folder to upload the file to†

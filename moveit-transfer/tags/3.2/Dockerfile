@@ -11,5 +11,5 @@ RUN install2.r --error \
     dplyr \
     writexl
 
-COPY tags/3.1/moveit-download.R /
-COPY tags/3.1/moveit-transfer.R /
+COPY moveit-download.R /
+COPY moveit-transfer.R /
