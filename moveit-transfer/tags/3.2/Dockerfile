@@ -1,4 +1,3 @@
-# Build from moveit-transfer/:  docker build -f tags/3.2/Dockerfile -t countystats/moveit-transfer:3.2 .
 FROM countystats/r-basic:4.3
 
 LABEL maintainer="Daniel Andrus daniel.andrus@alleghenycounty.us"
