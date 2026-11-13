@@ -23,6 +23,8 @@ Image Name: `countystats/sharepoint-to-staging:python`
 * wh_pw: Airflow Connection value*
 * snakecase: Format column names in snake case
   * Default: "NO"
+* deadlock_retries: (2.0) Attempts for the warehouse load when SQL Server picks it as a deadlock victim (error 1205); waits a random 5-20s x attempt between tries
+  * Default: 5
 
 (*) Required variable
 
