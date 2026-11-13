@@ -4,6 +4,15 @@ This script will take data from Individual Sharepoints/Office 365 Excel Document
 
 Image Name: `countystats/sharepoint-to-staging:python`
 
+## Tags
+* `2.0`: `to_sql(if_exists='replace')` with batched inserts, retried when SQL Server picks it as a deadlock victim.
+* `2.1`: **load-then-swap**. Parallel loads into the same database no longer deadlock:
+  1. an empty private table `<table>__load_<random>` is created and committed;
+  2. rows are inserted into it, a transaction that locks only that private table;
+  3. the old staging table is dropped and the private one renamed into place (`sp_rename`) in one short transaction.
+
+  The staging table appears complete or not at all. A failed run drops its private table. Leftovers, if any, match `%\_\_load\_%`. Table names and column types are the same as 2.0.
+
 ## Enviornmental Variables:
 * dept: Schema and Department Name*
 * table: Datawarehouse table name*
@@ -23,7 +32,7 @@ Image Name: `countystats/sharepoint-to-staging:python`
 * wh_pw: Airflow Connection value*
 * snakecase: Format column names in snake case
   * Default: "NO"
-* deadlock_retries: (2.0) Attempts for the warehouse load when SQL Server picks it as a deadlock victim (error 1205); waits a random 5-20s x attempt between tries
+* deadlock_retries: (2.0/2.1) Attempts when SQL Server picks a write as a deadlock victim (error 1205); waits a random 5-20s x attempt between tries. In 2.1 this covers only the short create and swap steps
   * Default: 5
 
 (*) Required variable
