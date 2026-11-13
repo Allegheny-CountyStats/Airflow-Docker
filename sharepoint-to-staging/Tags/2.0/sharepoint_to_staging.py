@@ -6,8 +6,11 @@ from requests_oauthlib import OAuth2Session
 import requests
 import pandas as pd
 import os
+import random
+import time
 import sqlalchemy as sa
 from sqlalchemy.engine import URL
+from sqlalchemy.exc import DBAPIError
 import re
 
 # Load Datawarehouse Credentials
@@ -33,7 +36,9 @@ connection_url = URL.create(
         "driver": "ODBC Driver 17 for SQL Server"
     },
 )
-engine = sa.create_engine(connection_url)
+# fast_executemany batches inserts so the replace transaction (and its catalog locks) is short;
+# hide_parameters keeps row values out of error messages and Airflow logs
+engine = sa.create_engine(connection_url, fast_executemany=True, hide_parameters=True)
 
 client_id = os.getenv("client_id")
 client_secret = os.getenv("client_secret")
@@ -114,4 +119,17 @@ if snake_case == "YES":
 
     df.columns = [to_snake_case(col) for col in df.columns]
 
-df.to_sql(name=table_name, schema=schema, con=engine, if_exists='replace', index=False)
+# Concurrent replace loads into the same database can deadlock on catalog locks (error 1205).
+# The victim's transaction is rolled back, so retrying after a random wait is safe.
+max_attempts = int(os.getenv('deadlock_retries', 5))
+for attempt in range(1, max_attempts + 1):
+    try:
+        df.to_sql(name=table_name, schema=schema, con=engine, if_exists='replace', index=False)
+        break
+    except DBAPIError as e:
+        sqlstate = e.orig.args[0] if e.orig is not None and e.orig.args else None
+        if sqlstate != '40001' or attempt == max_attempts:
+            raise
+        wait = random.uniform(5, 20) * attempt
+        print(f'Deadlock victim loading {schema}.{table_name} (attempt {attempt}/{max_attempts}); retrying in {wait:.0f}s')
+        time.sleep(wait)
