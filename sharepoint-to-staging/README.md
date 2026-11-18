@@ -22,9 +22,9 @@ Image Name: `countystats/sharepoint-to-staging:python`
   * Default: First sheet of Excel document
 * client_id: Microsoft Graph API Airflow Variable*
 * client_secret: Microsoft Graph API Airflow Variable*
-* drive_id: ID of the user or Sharepoint groups Drive. Use `Get Drive & File ID.ipynb` to get ID.*
-* file_id: File ID of the file. Use `Get Drive & File ID.ipynb` to get ID.*
-* drive_type: Whether the endpoint should call drives (user) or sites (sharepoint group) endpoint.
+* drive_id: ID of the user or Sharepoint groups Drive. See [Finding IDs](#finding-ids).*
+* file_id: File ID of the file. See [Finding IDs](#finding-ids).*
+* drive_type: Whether the endpoint should call drives (user / any library) or sites (sharepoint group's default library) endpoint.
   * Default: `drives` (user)
 * wh_host: Airflow Connection value*
 * wh_db: Airflow Connection value*
@@ -36,6 +36,32 @@ Image Name: `countystats/sharepoint-to-staging:python`
   * Default: 5
 
 (*) Required variable
+
+## Finding IDs
+
+`Get Drive & File ID.py` turns the names you see in SharePoint into `drive_type`, `drive_id` and `file_id`. It reads `client_id`/`client_secret` from the environment or the nearest `.env` (this folder or a parent).
+
+```
+# Site display name + file name (searches every library on the site)
+python "Get Drive & File ID.py" --site "IDE Data Warehouse" --file WWS_Dataset.xlsx
+
+# Site URL copied from the browser (any page on the site works)
+python "Get Drive & File ID.py" --site "https://alleghenycounty.sharepoint.com/sites/<Site>" --file WWS_Dataset.xlsx
+
+# Exact lookup by library + folder: use this for newly uploaded/renamed files that search hasn't indexed yet
+python "Get Drive & File ID.py" --site "IDE Data Warehouse" --library Documents --path General --file WWS_Dataset.xlsx
+
+# A user's OneDrive
+python "Get Drive & File ID.py" --user someone@alleghenycounty.us --file report.xlsx
+```
+
+Use `--path /` for the library root, `--all` to list every match, and `--insecure` if TLS verification fails on your network. You can also set the defaults at the top of the script and run it with no arguments.
+
+The script lists matches best-first (exact name, then partial, newest first) with library, folder and link so you can confirm the file, then prints the values for the DAG:
+* File in the site's default library (usually "Documents"): `drive_type: 'sites'`, `drive_id` = site id.
+* File in another library or a OneDrive: `drive_type: 'drives'`, `drive_id` = that library's drive id. `sharepoint_upload.py` only supports the default library.
+
+If a site name matches several sites, the script stops and lists them; re-run with the site's URL.
 
 ## Dag Example
 
@@ -91,7 +117,7 @@ Needs the following command within the docker operator:
 ## Environmental Variables:
 * client_id: Microsoft Graph API Airflow Variable*
 * client_secret: Microsoft Graph API Airflow Variable*
-* drive_id: ID of the user or Sharepoint groups Drive. Use `Get Drive & File ID.ipynb` to get ID.*
+* drive_id: Site id of the Sharepoint group. See [Finding IDs](#finding-ids) (`sites` mode value).*
 * filename: name of file to upload*
 * folder_name: name of target sharepoint folder, defaults to `None` which lands the file in the root Documents folder.
 
