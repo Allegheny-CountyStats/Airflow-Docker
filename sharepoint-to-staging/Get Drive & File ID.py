@@ -6,6 +6,9 @@ Examples:
     python "Get Drive & File ID.py" --site https://<tenant>.sharepoint.com/sites/Foo --file report.xlsx
     python "Get Drive & File ID.py" --site "IDE Data Warehouse" --library Documents --path "Reports/2026" --file report.xlsx
     python "Get Drive & File ID.py" --user someone@alleghenycounty.us --file report.xlsx
+    python "Get Drive & File ID.py" --site "IDE Data Warehouse" --no-file   # site/library ids only
+
+Leave out the file (FILE_NAME = None, or --no-file) to get only the site / drive id.
 
 Needs client_id and client_secret in the environment or in a .env file in this folder or a parent.
 """
@@ -27,7 +30,7 @@ from requests_oauthlib import OAuth2Session
 # Fill out to search without command-line arguments (arguments override these):
 SITE = 'IDE Data Warehouse'  # Site display name or site URL from the browser
 USER = None                  # OneDrive owner's email (use instead of SITE)
-FILE_NAME = 'WWS_Dataset.xlsx'
+FILE_NAME = None  # None returns only the site/drive id
 LIBRARY = None               # Library name from the site's left nav, e.g. 'Documents'; None searches all
 FOLDER_PATH = None           # Folder inside the library, e.g. 'Reports/2026'; exact lookup instead of search
 
@@ -191,16 +194,21 @@ def folder_of(item):
     return urllib.parse.unquote(path.split('root:', 1)[1].lstrip('/')) or '/'
 
 
-def deployment_values(item, site_id, default_drive_id):
-    """Environment values for sharepoint-to-staging.
+def drive_values(site_id, drive_id, default_drive_id):
+    """drive_type / drive_id for sharepoint-to-staging.
 
-    The image's 'sites' mode only reads the site's default library, so files elsewhere
-    (other libraries, OneDrive) use 'drives' mode with the item's own drive id.
+    The image's 'sites' mode only reads the site's default library, so other
+    libraries and OneDrive use 'drives' mode with their own drive id.
     """
-    drive_id = (item.get('parentReference') or {}).get('driveId')
     if site_id and drive_id == default_drive_id:
-        return {'drive_type': 'sites', 'drive_id': site_guid(site_id), 'file_id': item['id']}
-    return {'drive_type': 'drives', 'drive_id': drive_id, 'file_id': item['id']}
+        return {'drive_type': 'sites', 'drive_id': site_guid(site_id)}
+    return {'drive_type': 'drives', 'drive_id': drive_id}
+
+
+def deployment_values(item, site_id, default_drive_id):
+    """drive_type / drive_id / file_id for a file found in a site or OneDrive."""
+    drive_id = (item.get('parentReference') or {}).get('driveId')
+    return dict(drive_values(site_id, drive_id, default_drive_id), file_id=item['id'])
 
 
 # ---------- Lookups ----------
@@ -234,12 +242,36 @@ def find_items(session, drives, file_name, folder_path):
     return items
 
 
+def print_drive_ids(drives, site_id, default_drive_id, library):
+    """Ids-only output: the libraries and the drive values for the chosen one (no file search)."""
+    if site_id:
+        table = pd.DataFrame([{
+            'library': d.get('name'),
+            'default': 'yes' if d['id'] == default_drive_id else '',
+            'drive_id (drives mode)': d['id'],
+            'webUrl': d.get('webUrl'),
+        } for d in drives])
+        table.index += 1
+        with pd.option_context('display.max_colwidth', 120, 'display.width', 250):
+            print('\nLibraries:')
+            print(table.to_string())
+    # --library picks that library; otherwise the default library (sites mode)
+    chosen = drives[0] if library else next(d for d in drives if d['id'] == default_drive_id)
+    print('\nValues for {}:'.format(chosen.get('name') if site_id else 'this OneDrive'))
+    for k, v in drive_values(site_id, chosen['id'], default_drive_id).items():
+        print("    '{}': '{}',".format(k, v))
+    if site_id and not library:
+        print("Files in another library need drive_type 'drives' with that library's drive id from the table.")
+    return 0
+
+
 def main(argv=None):
     p = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
     loc = p.add_mutually_exclusive_group()
     loc.add_argument('--site', help='SharePoint site display name or URL')
     loc.add_argument('--user', help="OneDrive owner's email / UPN")
-    p.add_argument('--file', default=FILE_NAME, help='File name as shown in SharePoint')
+    p.add_argument('--file', default=FILE_NAME, help='File name as shown in SharePoint; omit for ids only')
+    p.add_argument('--no-file', action='store_true', help='Ignore FILE_NAME and return only the site/drive id')
     p.add_argument('--library', default=LIBRARY, help='Library name, e.g. "Documents" (default: all)')
     p.add_argument('--path', default=FOLDER_PATH, help='Folder inside the library for an exact lookup')
     p.add_argument('--all', action='store_true', help='List every file the search returned')
@@ -247,8 +279,12 @@ def main(argv=None):
     args = p.parse_args(argv)
     if not args.site and not args.user:
         args.site, args.user = (SITE, None) if SITE else (None, USER)
-    if not (args.site or args.user) or not args.file:
-        p.error('need --site or --user, and --file')
+    if args.no_file:
+        args.file = None
+    if not (args.site or args.user):
+        p.error('need --site or --user')
+    if args.path is not None and not args.file:
+        p.error('--path needs --file')
 
     if args.insecure:
         urllib3.disable_warnings()
@@ -266,7 +302,11 @@ def main(argv=None):
         drives = filter_drives(graph_get_all(session, '/sites/{}/drives'.format(site_id)), args.library)
         print('Site: {}  {}'.format(site.get('displayName'), site.get('webUrl')))
         print('Site id (sites mode drive_id): {}'.format(site_guid(site_id)))
-        print('Libraries searched: {}'.format(', '.join(d.get('name') for d in drives)))
+        if args.file:
+            print('Libraries searched: {}'.format(', '.join(d.get('name') for d in drives)))
+
+    if not args.file:
+        return print_drive_ids(drives, site_id, default['id'], args.library)
 
     ranked = rank_items(find_items(session, drives, args.file, args.path), args.file)
     if not ranked:

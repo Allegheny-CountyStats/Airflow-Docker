@@ -53,7 +53,12 @@ python "Get Drive & File ID.py" --site "IDE Data Warehouse" --library Documents 
 
 # A user's OneDrive
 python "Get Drive & File ID.py" --user someone@alleghenycounty.us --file report.xlsx
+
+# Site / library ids only, no file (e.g. drive_id for sharepoint_upload)
+python "Get Drive & File ID.py" --site "IDE Data Warehouse" --no-file
 ```
+
+Leaving out the file (`--no-file`, or `FILE_NAME = None` at the top of the script) skips the file search. The script lists the site's libraries with their drive ids and prints `drive_type`/`drive_id` for the default library, or for the library named with `--library`.
 
 Use `--path /` for the library root, `--all` to list every match, and `--insecure` if TLS verification fails on your network. You can also set the defaults at the top of the script and run it with no arguments.
 
