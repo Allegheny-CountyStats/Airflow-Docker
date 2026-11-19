@@ -7,6 +7,7 @@ Examples:
     python "Get Drive & File ID.py" --site "IDE Data Warehouse" --library Documents --path "Reports/2026" --file report.xlsx
     python "Get Drive & File ID.py" --user someone@alleghenycounty.us --file report.xlsx
     python "Get Drive & File ID.py" --site "IDE Data Warehouse" --no-file   # site/library ids only
+    python "Get Drive & File ID.py" --site "<site id from a DAG>" --no-file  # which site is this id?
 
 Leave out the file (FILE_NAME = None, or --no-file) to get only the site / drive id.
 
@@ -14,6 +15,7 @@ Needs client_id and client_secret in the environment or in a .env file in this f
 """
 import argparse
 import os
+import re
 import sys
 import time
 import urllib.parse
@@ -28,7 +30,7 @@ from requests.auth import HTTPBasicAuth
 from requests_oauthlib import OAuth2Session
 
 # Fill out to search without command-line arguments (arguments override these):
-SITE = 'IDE Data Warehouse'  # Site display name or site URL from the browser
+SITE = 'County Operations Briefs TEST'  # Site display name or site URL from the browser
 USER = None                  # OneDrive owner's email (use instead of SITE)
 FILE_NAME = None  # None returns only the site/drive id
 LIBRARY = None               # Library name from the site's left nav, e.g. 'Documents'; None searches all
@@ -134,6 +136,17 @@ def pick_site(candidates, name):
         name, len(pool), '\n'.join(lines)))
 
 
+_GUID = re.compile(r'^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$')
+
+
+def looks_like_site_id(value):
+    """True for a full Graph site id ('host,siteGuid,webGuid') or a bare site GUID."""
+    parts = [p.strip() for p in value.strip().split(',')]
+    if len(parts) == 3:
+        return '.' in parts[0] and all(_GUID.match(p) for p in parts[1:])
+    return len(parts) == 1 and bool(_GUID.match(parts[0]))
+
+
 def site_guid(site_id):
     """Graph site ids look like 'host,siteGuid,webGuid'; sharepoint-to-staging uses the site GUID."""
     parts = site_id.split(',')
@@ -194,32 +207,38 @@ def folder_of(item):
     return urllib.parse.unquote(path.split('root:', 1)[1].lstrip('/')) or '/'
 
 
-def drive_values(site_id, drive_id, default_drive_id):
+def drive_values(site_id, drive_id, default_drive_id, subsite=False):
     """drive_type / drive_id for sharepoint-to-staging.
 
     The image's 'sites' mode only reads the site's default library, so other
     libraries and OneDrive use 'drives' mode with their own drive id.
+    In 'sites' mode the site GUID is enough, except for a subsite: the GUID alone
+    resolves to the site collection's root site, so a subsite needs the full id.
     """
     if site_id and drive_id == default_drive_id:
-        return {'drive_type': 'sites', 'drive_id': site_guid(site_id)}
+        return {'drive_type': 'sites', 'drive_id': site_id if subsite else site_guid(site_id)}
     return {'drive_type': 'drives', 'drive_id': drive_id}
 
 
-def deployment_values(item, site_id, default_drive_id):
+def deployment_values(item, site_id, default_drive_id, subsite=False):
     """drive_type / drive_id / file_id for a file found in a site or OneDrive."""
     drive_id = (item.get('parentReference') or {}).get('driveId')
-    return dict(drive_values(site_id, drive_id, default_drive_id), file_id=item['id'])
+    return dict(drive_values(site_id, drive_id, default_drive_id, subsite), file_id=item['id'])
 
 
 # ---------- Lookups ----------
 
 def resolve_site(session, site):
+    """Site from a URL, a site id (full or GUID) or a display name."""
+    if looks_like_site_id(site):
+        return graph_get(session, '/sites/{}'.format(site.strip().replace(' ', '')))
     parsed = parse_site_url(site)
     if parsed:
         host, path = parsed
         return graph_get(session, '/sites/{}:{}'.format(host, path) if path else '/sites/{}'.format(host))
     candidates = graph_get_all(session, '/sites?search={}'.format(urllib.parse.quote(site)))
-    return pick_site(candidates, site)
+    # Re-read the chosen site: search results may leave out the 'root' facet used to spot subsites
+    return graph_get(session, '/sites/{}'.format(pick_site(candidates, site)['id']))
 
 
 def find_items(session, drives, file_name, folder_path):
@@ -242,7 +261,7 @@ def find_items(session, drives, file_name, folder_path):
     return items
 
 
-def print_drive_ids(drives, site_id, default_drive_id, library):
+def print_drive_ids(drives, site_id, default_drive_id, library, subsite=False):
     """Ids-only output: the libraries and the drive values for the chosen one (no file search)."""
     if site_id:
         table = pd.DataFrame([{
@@ -258,7 +277,7 @@ def print_drive_ids(drives, site_id, default_drive_id, library):
     # --library picks that library; otherwise the default library (sites mode)
     chosen = drives[0] if library else next(d for d in drives if d['id'] == default_drive_id)
     print('\nValues for {}:'.format(chosen.get('name') if site_id else 'this OneDrive'))
-    for k, v in drive_values(site_id, chosen['id'], default_drive_id).items():
+    for k, v in drive_values(site_id, chosen['id'], default_drive_id, subsite).items():
         print("    '{}': '{}',".format(k, v))
     if site_id and not library:
         print("Files in another library need drive_type 'drives' with that library's drive id from the table.")
@@ -268,7 +287,7 @@ def print_drive_ids(drives, site_id, default_drive_id, library):
 def main(argv=None):
     p = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
     loc = p.add_mutually_exclusive_group()
-    loc.add_argument('--site', help='SharePoint site display name or URL')
+    loc.add_argument('--site', help='SharePoint site display name, URL, or site id (full or GUID)')
     loc.add_argument('--user', help="OneDrive owner's email / UPN")
     p.add_argument('--file', default=FILE_NAME, help='File name as shown in SharePoint; omit for ids only')
     p.add_argument('--no-file', action='store_true', help='Ignore FILE_NAME and return only the site/drive id')
@@ -290,7 +309,7 @@ def main(argv=None):
         urllib3.disable_warnings()
     session = get_session(verify=not args.insecure)
 
-    site_id = None
+    site_id, subsite = None, False
     if args.user:
         default = graph_get(session, '/users/{}/drive'.format(urllib.parse.quote(args.user)))
         drives = [default]
@@ -301,12 +320,17 @@ def main(argv=None):
         default = graph_get(session, '/sites/{}/drive'.format(site_id))
         drives = filter_drives(graph_get_all(session, '/sites/{}/drives'.format(site_id)), args.library)
         print('Site: {}  {}'.format(site.get('displayName'), site.get('webUrl')))
-        print('Site id (sites mode drive_id): {}'.format(site_guid(site_id)))
+        subsite = 'root' not in site  # only the site collection's top site has the 'root' facet
+        if subsite:
+            print('Subsite: sites mode needs the full site id (the GUID alone points to the parent site).')
+        else:
+            print('Site id (sites mode drive_id): {}'.format(site_guid(site_id)))
+        print('Full site id (also valid): {}'.format(site_id))
         if args.file:
             print('Libraries searched: {}'.format(', '.join(d.get('name') for d in drives)))
 
     if not args.file:
-        return print_drive_ids(drives, site_id, default['id'], args.library)
+        return print_drive_ids(drives, site_id, default['id'], args.library, subsite)
 
     ranked = rank_items(find_items(session, drives, args.file, args.path), args.file)
     if not ranked:
@@ -343,7 +367,7 @@ def main(argv=None):
         print('\nWARNING: {} files share this name; #1 is the most recently modified. '
               'Check the folder/webUrl columns or use --path.'.format(len(exact)))
 
-    values = deployment_values(best, site_id, default['id'])
+    values = deployment_values(best, site_id, default['id'], subsite)
     print('\nValues for #1 ({}):'.format(best.get('name')))
     for k, v in values.items():
         print("    '{}': '{}',".format(k, v))

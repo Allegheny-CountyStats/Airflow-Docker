@@ -56,7 +56,12 @@ python "Get Drive & File ID.py" --user someone@alleghenycounty.us --file report.
 
 # Site / library ids only, no file (e.g. drive_id for sharepoint_upload)
 python "Get Drive & File ID.py" --site "IDE Data Warehouse" --no-file
+
+# Check which site an existing DAG's drive_id points at (full id or GUID)
+python "Get Drive & File ID.py" --site "alleghenycounty.sharepoint.com,<siteGuid>,<webGuid>" --no-file
 ```
+
+**Site id formats.** Graph's full site id is `hostname,siteGuid,webGuid`; the script prints both it and the short `siteGuid`. Either works as `drive_id` in `sites` mode, and existing DAGs use both. The exception is a subsite: the GUID alone points to the parent site, so for a subsite the script prints the full id in the values block.
 
 Leaving out the file (`--no-file`, or `FILE_NAME = None` at the top of the script) skips the file search. The script lists the site's libraries with their drive ids and prints `drive_type`/`drive_id` for the default library, or for the library named with `--library`.
 
