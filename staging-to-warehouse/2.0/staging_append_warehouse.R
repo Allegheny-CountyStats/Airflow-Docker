@@ -5,8 +5,10 @@ require(dplyr)
 # dotenv::load_dot_env()
 
 dept <- Sys.getenv("DEPT")
-tables <- Sys.getenv('TABLES') # List/Dict
+table <- Sys.getenv('TABLE')
+tables <- Sys.getenv('TABLES', table) # List/Dict
 tables <- unlist(strsplit(tables, ","))
+if (length(tables) == 0) stop("No tables given: set TABLES (or TABLE)")
 
 target_schema <- Sys.getenv('TARGET_SCHEMA', "Master")
 
@@ -25,7 +27,7 @@ for (table in tables) {
   prel_table <- paste0("Staging.", table_name)
   new_table <- paste0(target_schema, ".", paste(dept, source, table, sep = "_"))
   
-  if (dbExistsTable(wh_con, SQL(new_table))) {
+  if (dbExistsTable(wh_con, Id(schema = target_schema, table = table_name))) {
     cols <- paste0("SELECT COLUMN_NAME
   FROM INFORMATION_SCHEMA.COLUMNS
   WHERE TABLE_NAME = '", table_name, "' AND TABLE_SCHEMA = 'Staging'")

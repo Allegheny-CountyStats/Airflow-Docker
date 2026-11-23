@@ -8,6 +8,7 @@ dept <- Sys.getenv("DEPT")
 table <- Sys.getenv('TABLE')
 tables <- Sys.getenv('TABLES', table)
 tables <- unlist(strsplit(tables, ","))
+if (length(tables) == 0) stop("No tables given: set TABLES (or TABLE)")
 req_tables <- Sys.getenv('REQ_TABLES')
 req_tables <- unlist(strsplit(req_tables, ","))
 
@@ -71,16 +72,14 @@ WHERE TABLE_NAME = '", table_name, "' AND TABLE_SCHEMA = 'Staging'")
     }else{
       print(paste(y, "records added back to", new_table))
     }
+
+    # Drop Staging Table
+    sql_drop <- paste('DROP TABLE IF EXISTS', prel_table)
+    dbExecute(wh_con, sql_drop)
   } else {
     sql_move <- paste("ALTER SCHEMA", target_schema, "TRANSFER", prel_table)
     dbExecute(wh_con, sql_move)
   }
-}
-
-for (table in tables){
-  # Drop Staging Table
-  sql_drop <- paste('DROP TABLE IF EXISTS', prel_table)
-  dbExecute(wh_con, sql_drop)
 }
 
 # Disconnect from Warehouse

@@ -5,6 +5,7 @@ Provide a list of tables within a Staging schema and move them to the Master Dat
 Image name: `countystats/staging-to-warehouse:r`
 
 * Overwrite command: `Rscript staging_to_warehouse.R'`
+  * In the `2.0` tag, all three scripts accept `TABLE` for a single table (or `TABLES`) and stop with an error if no tables are given
 * Append Command: `Rscript staging_append_warehouse.R`
   * Can specify which tables must produce new rows with 'REQ_TABLES' variable
 * Replace/Append Command: `Rscript staging_replace_warehouse.R`
@@ -16,6 +17,14 @@ Tags:
 - calc_col
 - 2.0
 
+
+## Tests
+
+Offline tests for the `2.0` scripts live in `tests/`. They mock DBI, so no warehouse connection is needed (requires `testthat`, `withr`, `DBI`, `odbc`, `dplyr`). From this folder:
+
+```
+Rscript -e 'testthat::test_dir("tests")'
+```
 
 ## Example Dag Usages:
 

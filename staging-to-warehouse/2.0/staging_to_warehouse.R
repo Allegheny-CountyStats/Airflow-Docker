@@ -4,8 +4,10 @@ require(DBI)
 # dotenv::load_dot_env()
 
 dept <- Sys.getenv("DEPT")
-tables <- Sys.getenv('TABLES') # List/Dict
+table <- Sys.getenv('TABLE')
+tables <- Sys.getenv('TABLES', table) # List/Dict
 tables <- unlist(strsplit(tables, ","))
+if (length(tables) == 0) stop("No tables given: set TABLES (or TABLE)")
 req_tables <- Sys.getenv('REQ_TABLES')
 req_tables <- unlist(strsplit(req_tables, ","))
 
@@ -23,11 +25,12 @@ wh_con <- dbConnect(odbc::odbc(), driver = "{ODBC Driver 17 for SQL Server}", se
 
 for (table in tables) {
   # Get Preload Table
-  prel_table <- paste0("Staging.", paste(dept, source, table, sep = "_"))
-  new_table <- paste0(target_schema, ".", paste(dept, source, table, sep = "_"))
-  
+  table_name <- paste(dept, source, table, sep = "_")
+  prel_table <- paste0("Staging.", table_name)
+  new_table <- paste0(target_schema, ".", table_name)
+
   # Check to see if table has already been moved in previous run
-  if (dbExistsTable(wh_con, SQL(prel_table))) {
+  if (dbExistsTable(wh_con, Id(schema = "Staging", table = table_name))) {
     if (table %in% req_tables){
       id_q <- paste0("SELECT DISTINCT [", id_col, "] FROM ", prel_table, "")
       id_df <- dbGetQuery(wh_con, id_q)
