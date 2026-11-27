@@ -24,6 +24,29 @@ Image name: `countystats/as400-to-staging:r`
 * append_sign: WHERE statement sign for appending new data.
   * Default: `>`
 
+## Chunked pulls: `countystats/as400-to-staging:r.chunk`
+
+For large pulls (100k+ rows). Built from `Tags/r.chunk/Dockerfile`, runs `as400_to_staging_chunk.R`. Takes the same variables as above, plus:
+
+* chunk_size: Rows fetched from JDE and written to Staging per batch
+  * Default: `50000`
+* block_size: jt400 block size in KB per network round trip (8-512)
+  * Default: `512`
+* segments: Comma-separated `start-end` ranges, e.g. `21-21,22-22,23-99`. The `sql` must contain `SEGMENT_START` and `SEGMENT_END`; the query runs once per range, one after another, and the results are appended into one Staging table.
+  * Default: none (one query)
+* java_heap: JVM options for rJava
+  * Default: `-Xmx2g`
+
+The first write of a run replaces the Staging table and later chunks append to it. If any chunk fails, the task fails, so a partial table is never handed to the next task. The log prints the time spent opening each query, fetching and writing, so you can tell whether JDE or the warehouse write is the bottleneck.
+
+### Tests
+
+Offline (RSQLite stands in for JDE and the warehouse; no Java needed). From the repo root (where `Airflow-Docker.Rproj` is):
+
+```
+Rscript -e "testthat::test_dir('as400-to-staging/tests/testthat')"
+```
+
 ## Example:
 ```
 connection = BaseHook.get_connection("as400_connection_id")
