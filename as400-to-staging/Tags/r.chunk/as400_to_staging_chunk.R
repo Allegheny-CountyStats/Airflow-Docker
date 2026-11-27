@@ -12,7 +12,7 @@ build_query <- function(sql, schema, table, append_col = "", append_sign = ">", 
   if (sql != '') {
     query <- sql
   } else {
-    query <- paste0("SELECT * FROM ", schema, ".", table)
+    query <- paste0("SELECT * FROM ", schema, "../..", table)
   }
   if (append_col != '') {
     if (sql != '') {
