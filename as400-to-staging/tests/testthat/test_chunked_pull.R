@@ -85,6 +85,32 @@ test_that("the :r image builds schema.table too", {
   expect_match(line, 'schema, "\\.", table', fixed = FALSE)
 })
 
+test_that("JDBC DATE and TIMESTAMP columns keep their values as text", {
+  # Before: RJDBC 0.2-9+ (r-basic:4.2) ran as.Date(x, "%Y-%m-%d") on jt400's job-format date strings,
+  # so GL_DATE landed in the warehouse as an all-NULL date column
+  skip_if_not_installed("RJDBC")
+  ns <- asNamespace("RJDBC")
+  skip_if_not(exists("dbSetTypeMaps", envir = ns, inherits = FALSE), "RJDBC < 0.2-9 has no date conversion")
+  saved <- as.list(get(".type.map", envir = ns))
+  on.exit(do.call(get("dbSetTypeMaps", envir = ns), saved))
+  remap <- get(".remap.types", envir = ns)
+  df <- data.frame(d = "11/27/26", ts = "2026-11-27-13.47.09.000000", stringsAsFactors = FALSE)
+
+  keep_dates_as_text()
+  out <- remap(df, c(91L, 93L))  # java.sql.Types DATE, TIMESTAMP
+  expect_identical(out$d, "11/27/26")
+  expect_identical(out$ts, "2026-11-27-13.47.09.000000")
+})
+
+test_that("the first chunk logs each column's type and NA count", {
+  logged <- character(0)
+  src <- make_source(); wh <- dbConnect(RSQLite::SQLite(), ":memory:")
+  res <- dbSendQuery(src, "SELECT id, CASE WHEN id > 100 THEN NULL ELSE txt END AS txt FROM F0911")
+  on.exit(dbClearResult(res))
+  copy_in_chunks(function(n) dbFetch(res, n), make_writer(wh, "staging"), 200, log = function(m) logged <<- c(logged, m))
+  expect_match(logged[1], "columns: id: integer \\(0 NA\\), txt: character \\(20 NA\\)")
+})
+
 test_that("JDE julian dates convert per chunk", {
   out <- add_julian_date(data.frame(GLDGJ = c(126001L, 125365L)), "GLDGJ")
   expect_equal(out$date, as.Date(c("2026-01-01", "2025-12-31")))

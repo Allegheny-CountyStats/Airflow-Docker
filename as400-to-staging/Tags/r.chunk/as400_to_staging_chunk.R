@@ -22,6 +22,23 @@ build_query <- function(sql, schema, table, append_col = "", append_sign = ">", 
   query
 }
 
+# RJDBC 0.2-9+ converts DATE/TIMESTAMP columns with fixed ISO formats; jt400 sends job-format strings, so every
+# value became NA (GL_DATE landed as an all-NULL date column). Keep them as the driver's text, like :r (RJDBC 0.2-8).
+# dbSetTypeMaps is internal to RJDBC, so only call it when it exists.
+keep_dates_as_text <- function() {
+  ns <- asNamespace("RJDBC")
+  if (exists("dbSetTypeMaps", envir = ns, inherits = FALSE)) {
+    get("dbSetTypeMaps", envir = ns)(DATE = NULL, DATETIME = NULL, TIMESTAMP = NULL)
+  }
+  invisible(NULL)
+}
+
+# One line per run, e.g. "GL_DATE: character (0 NA)", so a column that arrives empty shows up in the task log
+describe_columns <- function(df) {
+  paste(sprintf("%s: %s (%d NA)", names(df), vapply(df, function(col) class(col)[1], character(1)),
+                vapply(df, function(col) sum(is.na(col)), integer(1))), collapse = ", ")
+}
+
 add_julian_date <- function(df, date_col) {
   if (date_col != "") {
     df <- df %>%
@@ -77,6 +94,7 @@ copy_in_chunks <- function(fetch_chunk, write_chunk, chunk_size, date_col = "", 
     if (fetched == 0 && !first_write) break
     fetch_secs <- elapsed(t0)
     chunk <- add_julian_date(chunk, date_col)
+    if (first_write) log(paste("  columns:", describe_columns(chunk)))
     t1 <- Sys.time()
     write_chunk(chunk, overwrite = first_write)
     log(sprintf("  chunk: %d rows, fetch %.1fs, write %.1fs", fetched, fetch_secs, elapsed(t1)))
@@ -114,6 +132,7 @@ main <- function() {
   # JVM heap must be set before rJava starts
   options(java.parameters = Sys.getenv('java_heap', "-Xmx2g"))
   library(RJDBC)
+  keep_dates_as_text()
 
   t_start <- Sys.time()
   jdbcDriver <- JDBC(driverClass="com.ibm.as400.access.AS400JDBCDriver", classPath="/lib/jt400-jdk9-10.1.jar")
