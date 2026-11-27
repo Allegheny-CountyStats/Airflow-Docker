@@ -2,8 +2,6 @@
 # Chunked variant of as400_to_staging.R (image tag r.chunk). Same env vars, plus:
 #   chunk_size - rows per fetch/write (default 50000)
 #   block_size - jt400 KB per network round trip (default 512, the jt400 maximum)
-#   segments   - optional comma list of start-end ranges, e.g. "21-21,22-22,23-99". The sql must contain
-#                SEGMENT_START and SEGMENT_END; the query runs once per range, one after another.
 library(DBI)
 library(dplyr)
 library(rlang)
@@ -12,7 +10,7 @@ build_query <- function(sql, schema, table, append_col = "", append_sign = ">", 
   if (sql != '') {
     query <- sql
   } else {
-    query <- paste0("SELECT * FROM ", schema, "../..", table)
+    query <- paste0("SELECT * FROM ", schema, ".", table)
   }
   if (append_col != '') {
     if (sql != '') {
@@ -22,25 +20,6 @@ build_query <- function(sql, schema, table, append_col = "", append_sign = ">", 
     }
   }
   query
-}
-
-segment_queries <- function(query, segments) {
-  if (segments == '') {
-    return(list(all = query))
-  }
-  # Without both tokens every segment would run the full query and write duplicate rows
-  if (!grepl("SEGMENT_START", query, fixed = TRUE) || !grepl("SEGMENT_END", query, fixed = TRUE)) {
-    stop("segments is set but the sql has no SEGMENT_START / SEGMENT_END tokens")
-  }
-  ranges <- trimws(strsplit(segments, ",", fixed = TRUE)[[1]])
-  if (!all(grepl("^[^-]+-[^-]+$", ranges))) {
-    stop("segments must look like 'start-end,start-end': ", segments)
-  }
-  queries <- lapply(strsplit(ranges, "-", fixed = TRUE), function(r) {
-    q <- gsub("SEGMENT_START", trimws(r[1]), query, fixed = TRUE)
-    gsub("SEGMENT_END", trimws(r[2]), q, fixed = TRUE)
-  })
-  setNames(queries, ranges)
 }
 
 add_julian_date <- function(df, date_col) {
@@ -87,8 +66,8 @@ make_writer <- function(con, target, char_types = character(0)) {
 
 elapsed <- function(since) as.numeric(difftime(Sys.time(), since, units = "secs"))
 
-# Fetch and write until the result is exhausted. The first write of the run overwrites the Staging table
-# (even if empty, so the table always exists); everything after appends. Errors propagate so the task fails.
+# Fetch and write until the result is exhausted. The first chunk overwrites the Staging table
+# (even if empty, so the table always exists); later chunks append. Errors propagate so the task fails.
 copy_in_chunks <- function(fetch_chunk, write_chunk, chunk_size, date_col = "", first_write = TRUE, log = message) {
   rows <- 0
   repeat {
@@ -107,25 +86,7 @@ copy_in_chunks <- function(fetch_chunk, write_chunk, chunk_size, date_col = "", 
     gc(verbose = FALSE)
     if (fetched == 0) break
   }
-  list(rows = rows, first_write = first_write)
-}
-
-copy_segments <- function(queries, open_result, write_chunk, chunk_size, date_col = "", log = message) {
-  first_write <- TRUE
-  total <- 0
-  for (name in names(queries)) {
-    t0 <- Sys.time()
-    src <- open_result(queries[[name]])
-    log(sprintf("segment %s: query opened in %.1fs", name, elapsed(t0)))
-    out <- tryCatch(
-      copy_in_chunks(src$fetch, write_chunk, chunk_size, date_col, first_write, log),
-      finally = src$close()
-    )
-    first_write <- out$first_write
-    total <- total + out$rows
-    log(sprintf("segment %s: %d rows in %.1fs", name, out$rows, elapsed(t0)))
-  }
-  total
+  rows
 }
 
 main <- function() {
@@ -149,7 +110,6 @@ main <- function() {
 
   chunk_size <- as.integer(Sys.getenv('chunk_size', "50000"))
   block_size <- Sys.getenv('block_size', "512")
-  segments <- Sys.getenv('segments')
 
   # JVM heap must be set before rJava starts
   options(java.parameters = Sys.getenv('java_heap', "-Xmx2g"))
@@ -171,21 +131,16 @@ main <- function() {
     value_sql <- paste0("SELECT ", append_type, "(", append_col, ") as value FROM Master.", table_name)
     value <- dbGetQuery(wh_con, value_sql)$value
   }
-  queries <- segment_queries(build_query(sql, schema, table, append_col, append_sign, value), segments)
+  query <- build_query(sql, schema, table, append_col, append_sign, value)
 
-  char_types <- NULL
-  open_result <- function(query) {
-    res <- dbSendQuery(ibm, query)
-    # column sizes are the same for every segment; read them once
-    if (is.null(char_types)) char_types <<- char_field_types(jdbc_char_precisions(res))
-    list(fetch = function(n) fetch(res, n, block = min(n, 32768L)),
-         close = function() dbClearResult(res))
-  }
-  writer <- function(df, overwrite) {
-    make_writer(wh_con, SQL(paste0("Staging.", table_name)), char_types)(df, overwrite)
-  }
-
-  total <- copy_segments(queries, open_result, writer, chunk_size, date_col)
+  t0 <- Sys.time()
+  res <- dbSendQuery(ibm, query)
+  message(sprintf("query opened in %.1fs", elapsed(t0)))
+  writer <- make_writer(wh_con, SQL(paste0("Staging.", table_name)), char_field_types(jdbc_char_precisions(res)))
+  total <- tryCatch(
+    copy_in_chunks(function(n) fetch(res, n, block = min(n, 32768L)), writer, chunk_size, date_col),
+    finally = dbClearResult(res)
+  )
   message(sprintf("done: %d rows to Staging.%s in %.1fs", total, table_name, elapsed(t_start)))
 }
 

@@ -37,7 +37,7 @@ wh_con <- dbConnect(odbc::odbc(), driver = "{ODBC Driver 17 for SQL Server}", se
 if (sql != '') {
   query <- sql
 } else {
-  query <- paste0("SELECT * FROM ", schema, "../..", table)
+  query <- paste0("SELECT * FROM ", schema, ".", table)
 }
 
 # Append Value and Query
